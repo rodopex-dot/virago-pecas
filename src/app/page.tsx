@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import SearchBar from '@/components/SearchBar'
-import AdPlaceholder from '@/components/AdPlaceholder'
+import AdBanner from '@/components/AdBanner'
 import CompatibilityBadge from '@/components/CompatibilityBadge'
 import CategoryCard from '@/components/CategoryCard'
 import { ChevronRight, PlusCircle, Bike, Search } from 'lucide-react'
@@ -54,7 +54,7 @@ export default async function HomePage({
     <div className="mx-auto max-w-6xl px-4 py-8">
       {/* Ad top */}
       <div className="mb-8 flex justify-center">
-        <AdPlaceholder slot="top" />
+        <AdBanner slot="top" />
       </div>
 
       {/* Hero — mostrado apenas sem busca */}
@@ -173,7 +173,7 @@ export default async function HomePage({
                     {/* Ad entre categorias */}
                     {catIdx === 0 && resultCategories.length > 1 && (
                       <div className="mt-4 flex justify-center">
-                        <AdPlaceholder slot="inline" />
+                        <AdBanner slot="inline" />
                       </div>
                     )}
                   </div>
@@ -207,7 +207,7 @@ export default async function HomePage({
         {/* Sidebar */}
         <aside className="hidden w-64 shrink-0 lg:block">
           <div className="sticky top-24 space-y-4">
-            <AdPlaceholder slot="sidebar" />
+            <AdBanner slot="sidebar" />
             <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4">
               <p className="font-display text-sm font-bold uppercase tracking-wide text-white">
                 Contribuir

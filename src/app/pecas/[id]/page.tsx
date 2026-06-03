@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import CompatibilityBadge from '@/components/CompatibilityBadge'
 import VideoEmbed from '@/components/VideoEmbed'
-import AdPlaceholder from '@/components/AdPlaceholder'
+import AdBanner from '@/components/AdBanner'
 import { categoryConfig } from '@/components/CategoryCard'
 import { ArrowLeft, ExternalLink, Info, ShoppingCart } from 'lucide-react'
 
@@ -49,7 +49,7 @@ export default async function PartPage({ params }: { params: Promise<{ id: strin
     <div className="mx-auto max-w-6xl px-4 py-8">
       {/* Ad topo */}
       <div className="mb-6 flex justify-center">
-        <AdPlaceholder slot="top" />
+        <AdBanner slot="top" />
       </div>
 
       {/* Breadcrumb */}
@@ -123,7 +123,19 @@ export default async function PartPage({ params }: { params: Promise<{ id: strin
                       <div className="flex-1 p-5">
                         {/* Cabeçalho do card */}
                         <div className="flex flex-wrap items-start justify-between gap-3">
-                          <div className="flex-1">
+                          <div className="flex flex-1 gap-4">
+                            {/* Imagem do produto */}
+                            {cp.imageUrl && (
+                              <div className="h-24 w-24 shrink-0 overflow-hidden rounded-xl border border-zinc-700 bg-zinc-800">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src={cp.imageUrl}
+                                  alt={cp.name}
+                                  className="h-full w-full object-contain p-1"
+                                />
+                              </div>
+                            )}
+                            <div className="flex-1">
                             <div className="flex flex-wrap items-center gap-2">
                               <h2 className="text-lg font-bold text-white">{cp.name}</h2>
                               {cp.brand && (
@@ -142,6 +154,7 @@ export default async function PartPage({ params }: { params: Promise<{ id: strin
                                 {formatPrice(cp.price)}
                               </p>
                             )}
+                            </div>
                           </div>
                           <CompatibilityBadge level={cp.compatibilityLevel} />
                         </div>
@@ -187,7 +200,7 @@ export default async function PartPage({ params }: { params: Promise<{ id: strin
                   {/* Ad inline entre peças */}
                   {index === 0 && part.compatibleParts.length > 1 && (
                     <div className="my-4 flex justify-center">
-                      <AdPlaceholder slot="inline" />
+                      <AdBanner slot="inline" />
                     </div>
                   )}
                 </div>
@@ -213,7 +226,7 @@ export default async function PartPage({ params }: { params: Promise<{ id: strin
         {/* Sidebar */}
         <aside className="hidden w-64 shrink-0 lg:block">
           <div className="sticky top-24">
-            <AdPlaceholder slot="sidebar" />
+            <AdBanner slot="sidebar" />
           </div>
         </aside>
       </div>

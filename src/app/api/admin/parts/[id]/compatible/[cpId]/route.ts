@@ -11,7 +11,7 @@ export async function PUT(
   const { cpId } = await params
   try {
     const body = await request.json()
-    const { name, brand, partNumber, price, purchaseLink, compatibilityLevel, adaptationText, notes } = body
+    const { name, brand, partNumber, price, purchaseLink, compatibilityLevel, adaptationText, notes, imageUrl } = body
 
     if (!name?.trim() || !purchaseLink?.trim() || !VALID_LEVELS.includes(compatibilityLevel)) {
       return NextResponse.json({ error: 'Campos obrigatórios ausentes.' }, { status: 400 })
@@ -25,6 +25,7 @@ export async function PUT(
         partNumber: partNumber?.trim() || null,
         price: price ? parseFloat(price) : null,
         purchaseLink: purchaseLink.trim(),
+        imageUrl: imageUrl || null,
         compatibilityLevel,
         adaptationText: adaptationText?.trim() || null,
         notes: notes?.trim() || null,

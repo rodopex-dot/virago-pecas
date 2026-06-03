@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { CompatibilityLevel } from '@prisma/client'
+import { fetchOgImage } from '@/lib/fetchOgImage'
 
 const VALID_LEVELS: CompatibilityLevel[] = ['ENCAIXE_PERFEITO', 'ADAPTACAO_SIMPLES', 'ADAPTACAO_COMPLEXA']
 
@@ -8,11 +9,14 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const { id: partId } = await params
   try {
     const body = await request.json()
-    const { name, brand, partNumber, price, purchaseLink, compatibilityLevel, adaptationText, notes, videoLinks } = body
+    const { name, brand, partNumber, price, purchaseLink, compatibilityLevel, adaptationText, notes, videoLinks, imageUrl: providedImageUrl } = body
 
     if (!name?.trim() || !purchaseLink?.trim() || !VALID_LEVELS.includes(compatibilityLevel)) {
       return NextResponse.json({ error: 'Campos obrigatórios ausentes.' }, { status: 400 })
     }
+
+    // Auto-busca imagem se não fornecida
+    const imageUrl = providedImageUrl || await fetchOgImage(purchaseLink.trim()).catch(() => null)
 
     const videos: { url: string; platform: string; title?: string }[] = []
     if (videoLinks) {
@@ -33,6 +37,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         partNumber: partNumber?.trim() || null,
         price: price ? parseFloat(price) : null,
         purchaseLink: purchaseLink.trim(),
+        imageUrl: imageUrl || null,
         compatibilityLevel,
         adaptationText: adaptationText?.trim() || null,
         notes: notes?.trim() || null,

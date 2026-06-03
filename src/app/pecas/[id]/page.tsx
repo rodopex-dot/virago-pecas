@@ -5,7 +5,7 @@ import CompatibilityBadge from '@/components/CompatibilityBadge'
 import VideoEmbed from '@/components/VideoEmbed'
 import AdBanner from '@/components/AdBanner'
 import { categoryConfig } from '@/components/CategoryCard'
-import { ArrowLeft, ExternalLink, Info, ShoppingCart } from 'lucide-react'
+import { ArrowLeft, ExternalLink, ShoppingCart } from 'lucide-react'
 
 async function getPart(id: string) {
   return prisma.part.findUnique({
@@ -87,21 +87,6 @@ export default async function PartPage({ params }: { params: Promise<{ id: strin
                 {part.description && (
                   <p className="mt-2 text-zinc-400">{part.description}</p>
                 )}
-              </div>
-            </div>
-          </div>
-
-          {/* Legenda */}
-          <div className="mb-5 flex items-start gap-2 rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
-            <Info className="mt-0.5 h-4 w-4 shrink-0 text-orange-400" />
-            <div>
-              <p className="mb-2 text-xs font-bold uppercase tracking-widest text-zinc-500">
-                Níveis de compatibilidade
-              </p>
-              <div className="flex flex-wrap gap-2">
-                <CompatibilityBadge level="ENCAIXE_PERFEITO" size="sm" />
-                <CompatibilityBadge level="ADAPTACAO_SIMPLES" size="sm" />
-                <CompatibilityBadge level="ADAPTACAO_COMPLEXA" size="sm" />
               </div>
             </div>
           </div>

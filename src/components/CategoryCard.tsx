@@ -99,7 +99,7 @@ export default function CategoryCard({ category, partCount }: CategoryCardProps)
   return (
     <Link
       href={`/?q=${encodeURIComponent(category)}`}
-      className={`group relative overflow-hidden rounded-2xl border border-zinc-800 bg-gradient-to-br ${cfg.gradient} transition-all duration-300 hover:border-zinc-600 ${cfg.glow}`}
+      className={`group relative overflow-hidden rounded-2xl border border-zinc-200 bg-gradient-to-br ${cfg.gradient} transition-all duration-300 hover:border-zinc-400 dark:border-zinc-800 dark:hover:border-zinc-600 ${cfg.glow}`}
     >
       {cfg.image ? (
         /* Card com imagem de fundo */
@@ -117,31 +117,30 @@ export default function CategoryCard({ category, partCount }: CategoryCardProps)
             <h3 className="font-display text-xl font-bold uppercase tracking-wide text-white">
               {category}
             </h3>
-            <p className="mt-0.5 text-xs text-zinc-400">{cfg.description}</p>
+            <p className="mt-0.5 text-xs text-zinc-300">{cfg.description}</p>
             <div className="mt-2 flex items-center gap-1">
               <span className="text-sm font-bold text-orange-400">{partCount}</span>
-              <span className="text-xs text-zinc-500">peça{partCount !== 1 ? 's' : ''}</span>
+              <span className="text-xs text-zinc-400">peça{partCount !== 1 ? 's' : ''}</span>
             </div>
           </div>
         </>
       ) : (
         /* Card com ícone (padrão) */
         <>
-          {/* Background pattern */}
-          <div className="absolute inset-0 opacity-5">
-            <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full border-4 border-white" />
-            <div className="absolute -right-2 -top-2 h-16 w-16 rounded-full border-2 border-white" />
+          <div className="absolute inset-0 opacity-5 dark:opacity-5">
+            <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full border-4 border-zinc-900 dark:border-white" />
+            <div className="absolute -right-2 -top-2 h-16 w-16 rounded-full border-2 border-zinc-900 dark:border-white" />
           </div>
           <div className="relative p-6">
-            <div className="mb-4 inline-flex rounded-xl border border-white/10 bg-black/30 p-3 backdrop-blur-sm">
-              <Icon className="h-7 w-7 text-white" strokeWidth={1.5} />
+            <div className="mb-4 inline-flex rounded-xl border border-zinc-300 bg-white/60 p-3 backdrop-blur-sm dark:border-white/10 dark:bg-black/30">
+              <Icon className="h-7 w-7 text-zinc-700 dark:text-white" strokeWidth={1.5} />
             </div>
-            <h3 className="font-display text-xl font-bold uppercase tracking-wide text-white">
+            <h3 className="font-display text-xl font-bold uppercase tracking-wide text-zinc-900 dark:text-white">
               {category}
             </h3>
-            <p className="mt-1 text-xs text-zinc-400">{cfg.description}</p>
+            <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">{cfg.description}</p>
             <div className="mt-3 flex items-center gap-1">
-              <span className="text-sm font-bold text-orange-400">{partCount}</span>
+              <span className="text-sm font-bold text-orange-500">{partCount}</span>
               <span className="text-xs text-zinc-500">peça{partCount !== 1 ? 's' : ''}</span>
             </div>
           </div>

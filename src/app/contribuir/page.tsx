@@ -12,28 +12,28 @@ const levelOptions: { value: CompatibilityLevel; label: string; description: str
     value: 'ENCAIXE_PERFEITO',
     label: 'Encaixe Perfeito (Plug & Play)',
     description: 'Não exige nenhuma modificação. Monta diretamente.',
-    base: 'border-zinc-700 bg-zinc-900 hover:border-green-500/50',
+    base: 'border-zinc-300 bg-white hover:border-green-500/50 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-green-500/50',
     selected: 'border-green-500 bg-green-500/10',
   },
   {
     value: 'ADAPTACAO_SIMPLES',
     label: 'Adaptação Simples',
     description: 'Exige pequenos ajustes: arruela, bucha, leve lixamento, etc.',
-    base: 'border-zinc-700 bg-zinc-900 hover:border-yellow-500/50',
+    base: 'border-zinc-300 bg-white hover:border-yellow-500/50 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-yellow-500/50',
     selected: 'border-yellow-500 bg-yellow-500/10',
   },
   {
     value: 'ADAPTACAO_COMPLEXA',
     label: 'Adaptação Complexa',
     description: 'Exige solda, cortes ou alterações estruturais significativas.',
-    base: 'border-zinc-700 bg-zinc-900 hover:border-red-500/50',
+    base: 'border-zinc-300 bg-white hover:border-red-500/50 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-red-500/50',
     selected: 'border-red-500 bg-red-500/10',
   },
 ]
 
-const inputClass = 'w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2.5 text-sm text-white placeholder-zinc-600 outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20'
+const inputClass = 'w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm text-zinc-900 placeholder-zinc-400 outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:placeholder-zinc-600'
 const labelClass = 'mb-1.5 block text-xs font-bold uppercase tracking-widest text-zinc-500'
-const cardClass = 'rounded-xl border border-zinc-800 bg-zinc-900 p-5'
+const cardClass = 'rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900'
 
 function ContribuirForm() {
   const searchParams = useSearchParams()
@@ -88,13 +88,13 @@ function ContribuirForm() {
       <div className="mx-auto max-w-xl px-4 py-16 text-center">
         <div className="mb-6 flex justify-center">
           <div className="rounded-full border border-green-500/30 bg-green-500/10 p-6">
-            <CheckCircle className="h-12 w-12 text-green-400" />
+            <CheckCircle className="h-12 w-12 text-green-500" />
           </div>
         </div>
-        <h2 className="font-display mb-2 text-3xl font-bold uppercase tracking-wide text-white">
+        <h2 className="font-display mb-2 text-3xl font-bold uppercase tracking-wide text-zinc-900 dark:text-white">
           Sugestão enviada!
         </h2>
-        <p className="mb-8 text-zinc-400">
+        <p className="mb-8 text-zinc-600 dark:text-zinc-400">
           Obrigado pela contribuição. Sua sugestão será analisada e publicada em breve.
         </p>
         <div className="flex justify-center gap-3">
@@ -110,7 +110,7 @@ function ContribuirForm() {
                 compatibilityLevel: '', adaptationText: '', videoLinks: '', submitterEmail: '' })
               setStatus('idle')
             }}
-            className="rounded-xl border border-zinc-700 px-5 py-2.5 font-semibold text-zinc-300 hover:border-zinc-500"
+            className="rounded-xl border border-zinc-300 px-5 py-2.5 font-semibold text-zinc-700 hover:border-zinc-400 dark:border-zinc-700 dark:text-zinc-300 dark:hover:border-zinc-500"
           >
             Enviar outra
           </button>
@@ -121,17 +121,17 @@ function ContribuirForm() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
-      <Link href="/" className="mb-6 inline-flex items-center gap-1.5 text-sm text-zinc-500 hover:text-orange-400">
+      <Link href="/" className="mb-6 inline-flex items-center gap-1.5 text-sm text-zinc-500 hover:text-orange-500">
         <ArrowLeft className="h-4 w-4" />
         Voltar
       </Link>
 
       <div className="mb-8">
-        <h1 className="font-display flex items-center gap-3 text-3xl font-bold uppercase tracking-wide text-white">
+        <h1 className="font-display flex items-center gap-3 text-3xl font-bold uppercase tracking-wide text-zinc-900 dark:text-white">
           <PlusCircle className="h-7 w-7 text-orange-500" />
           Contribuir com uma Peça
         </h1>
-        <p className="mt-2 text-zinc-400">
+        <p className="mt-2 text-zinc-600 dark:text-zinc-400">
           Ajude outros donos de Virago 250 compartilhando seu conhecimento.
           Sua sugestão passa por moderação antes de ser publicada.
         </p>
@@ -197,7 +197,7 @@ function ContribuirForm() {
                   onChange={handleChange} required className="mt-0.5 accent-orange-500"
                 />
                 <div>
-                  <p className="text-sm font-semibold text-white">{opt.label}</p>
+                  <p className="text-sm font-semibold text-zinc-900 dark:text-white">{opt.label}</p>
                   <p className="text-xs text-zinc-500">{opt.description}</p>
                 </div>
               </label>
@@ -205,13 +205,13 @@ function ContribuirForm() {
           </div>
         </div>
 
-        {/* Adaptação (condicional) */}
+        {/* Adaptação */}
         {needsAdaptation && (
           <div className={cardClass}>
             <h2 className="mb-1 font-display text-sm font-bold uppercase tracking-widest text-orange-500">
               Como fazer a adaptação *
             </h2>
-            <p className="mb-3 text-xs text-zinc-600">
+            <p className="mb-3 text-xs text-zinc-500">
               Descreva o processo com o máximo de detalhes para ajudar outros donos.
             </p>
             <textarea
@@ -236,13 +236,13 @@ function ContribuirForm() {
           <label className={labelClass}>Seu e-mail (opcional)</label>
           <input name="submitterEmail" type="email" value={form.submitterEmail} onChange={handleChange}
             placeholder="para@exemplo.com" className={inputClass} />
-          <p className="mt-1.5 text-xs text-zinc-700">
+          <p className="mt-1.5 text-xs text-zinc-400">
             Usado apenas para notificá-lo quando sua sugestão for aprovada.
           </p>
         </div>
 
         {status === 'error' && (
-          <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400">
+          <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-500">
             {errorMsg}
           </div>
         )}
@@ -265,7 +265,7 @@ function ContribuirForm() {
 export default function ContribuirPage() {
   return (
     <Suspense fallback={
-      <div className="mx-auto max-w-2xl px-4 py-8 text-center text-zinc-600">Carregando...</div>
+      <div className="mx-auto max-w-2xl px-4 py-8 text-center text-zinc-500">Carregando...</div>
     }>
       <ContribuirForm />
     </Suspense>

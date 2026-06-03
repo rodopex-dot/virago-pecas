@@ -6,24 +6,30 @@
 
 @layer base {
   body {
-    @apply bg-zinc-950 text-white;
+    @apply bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-white;
+    background-image:
+      radial-gradient(ellipse at top, rgba(249, 115, 22, 0.04) 0%, transparent 60%),
+      radial-gradient(ellipse at bottom-right, rgba(249, 115, 22, 0.02) 0%, transparent 50%);
+    background-attachment: fixed;
+  }
+
+  .dark body {
     background-image:
       radial-gradient(ellipse at top, rgba(249, 115, 22, 0.06) 0%, transparent 60%),
       radial-gradient(ellipse at bottom-right, rgba(249, 115, 22, 0.03) 0%, transparent 50%);
-    background-attachment: fixed;
   }
 
   ::-webkit-scrollbar {
     width: 6px;
   }
   ::-webkit-scrollbar-track {
-    @apply bg-zinc-950;
+    @apply bg-zinc-100 dark:bg-zinc-950;
   }
   ::-webkit-scrollbar-thumb {
-    @apply bg-zinc-700 rounded-full;
+    @apply bg-zinc-300 dark:bg-zinc-700 rounded-full;
   }
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-orange-600;
+    @apply bg-orange-500;
   }
 }
 
@@ -40,7 +46,7 @@
   }
 
   .card-dark {
-    @apply bg-zinc-900 border border-zinc-800 rounded-xl;
+    @apply bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl;
   }
 
   .card-dark-hover {

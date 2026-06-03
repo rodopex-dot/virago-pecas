@@ -113,14 +113,14 @@ export default function CategoryCard({ category, partCount }: CategoryCardProps)
             />
             <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/60 to-transparent" />
           </div>
-          <div className="px-5 pb-5 pt-3">
-            <h3 className="font-display text-xl font-bold uppercase tracking-wide text-white">
+          <div className="bg-white px-5 pb-5 pt-3 dark:bg-zinc-950/80">
+            <h3 className="font-display text-xl font-bold uppercase tracking-wide text-zinc-900 dark:text-white">
               {category}
             </h3>
-            <p className="mt-0.5 text-xs text-zinc-300">{cfg.description}</p>
+            <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">{cfg.description}</p>
             <div className="mt-2 flex items-center gap-1">
-              <span className="text-sm font-bold text-orange-400">{partCount}</span>
-              <span className="text-xs text-zinc-400">peça{partCount !== 1 ? 's' : ''}</span>
+              <span className="text-sm font-bold text-orange-500">{partCount}</span>
+              <span className="text-xs text-zinc-500 dark:text-zinc-400">peça{partCount !== 1 ? 's' : ''}</span>
             </div>
           </div>
         </>

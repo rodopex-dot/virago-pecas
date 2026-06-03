@@ -1,0 +1,25 @@
+# Dependências
+node_modules/
+
+# Build
+.next/
+out/
+
+# Ambiente (NUNCA suba para o git)
+.env
+.env.local
+.env.production
+
+# Banco de dados local
+*.db
+*.db-journal
+
+# Logs
+npm-debug.log*
+*.log
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Prisma — NÃO ignorar migrations (necessário para deploy)

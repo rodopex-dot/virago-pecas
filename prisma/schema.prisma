@@ -1,0 +1,83 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum CompatibilityLevel {
+  ENCAIXE_PERFEITO
+  ADAPTACAO_SIMPLES
+  ADAPTACAO_COMPLEXA
+}
+
+enum SuggestionStatus {
+  PENDENTE
+  APROVADA
+  REJEITADA
+}
+
+model Part {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  category    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  compatibleParts CompatiblePart[]
+
+  @@map("parts")
+}
+
+model CompatiblePart {
+  id                 String             @id @default(cuid())
+  name               String
+  brand              String?
+  partNumber         String?
+  price              Float?
+  purchaseLink       String
+  compatibilityLevel CompatibilityLevel
+  adaptationText     String?
+  notes              String?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  partId String
+  part   Part   @relation(fields: [partId], references: [id], onDelete: Cascade)
+
+  videos VideoReference[]
+
+  @@map("compatible_parts")
+}
+
+model VideoReference {
+  id               String @id @default(cuid())
+  url              String
+  platform         String
+  title            String?
+  compatiblePartId String
+
+  compatiblePart CompatiblePart @relation(fields: [compatiblePartId], references: [id], onDelete: Cascade)
+
+  @@map("video_references")
+}
+
+model Suggestion {
+  id                 String             @id @default(cuid())
+  partName           String
+  compatiblePartName String
+  brand              String?
+  purchaseLink       String
+  compatibilityLevel CompatibilityLevel
+  adaptationText     String?
+  videoLinks         String?
+  submitterEmail     String?
+  status             SuggestionStatus   @default(PENDENTE)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  @@map("suggestions")
+}

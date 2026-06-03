@@ -7,19 +7,19 @@ import Footer from '@/components/Footer'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Virago 250 Peças - Compatibilidade de Peças',
+  title: 'Virago 250 Peças — Compatibilidade de Peças',
   description:
-    'Encontre peças compatíveis para sua Yamaha Virago 250. Banco de dados completo com níveis de compatibilidade, instruções de adaptação e links de compra.',
-  keywords: 'Yamaha Virago 250, peças compatíveis, moto, adaptação, freio, suspensão',
+    'Banco de dados colaborativo de peças compatíveis para Yamaha Virago 250. Níveis de compatibilidade, instruções de adaptação e links de compra.',
+  keywords: 'Yamaha Virago 250, peças compatíveis, moto custom, adaptação, freio, suspensão',
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+      </head>
       <body className={inter.className}>
         <div className="flex min-h-screen flex-col">
           <Header />

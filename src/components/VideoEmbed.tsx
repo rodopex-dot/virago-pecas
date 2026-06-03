@@ -18,12 +18,9 @@ function getYouTubeId(url: string): string | null {
 
 function getPlatformIcon(platform: string) {
   switch (platform) {
-    case 'youtube':
-      return <Youtube className="h-5 w-5 text-red-600" />
-    case 'instagram':
-      return <Instagram className="h-5 w-5 text-pink-600" />
-    default:
-      return <Play className="h-5 w-5 text-gray-600" />
+    case 'youtube':  return <Youtube className="h-4 w-4 text-red-500" />
+    case 'instagram': return <Instagram className="h-4 w-4 text-pink-400" />
+    default:         return <Play className="h-4 w-4 text-zinc-400" />
   }
 }
 
@@ -31,12 +28,12 @@ export default function VideoEmbed({ videos }: VideoEmbedProps) {
   if (!videos.length) return null
 
   const youtubeVideos = videos.filter((v) => v.platform === 'youtube')
-  const otherVideos = videos.filter((v) => v.platform !== 'youtube')
+  const otherVideos   = videos.filter((v) => v.platform !== 'youtube')
 
   return (
     <div className="mt-4 space-y-3">
-      <h4 className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-        <Play className="h-4 w-4" />
+      <h4 className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-zinc-500">
+        <Play className="h-3.5 w-3.5 text-orange-500" />
         Vídeos de Referência
       </h4>
 
@@ -44,11 +41,11 @@ export default function VideoEmbed({ videos }: VideoEmbedProps) {
         const videoId = getYouTubeId(video.url)
         if (!videoId) return null
         return (
-          <div key={video.id} className="overflow-hidden rounded-lg border border-gray-200">
+          <div key={video.id} className="overflow-hidden rounded-xl border border-zinc-800">
             {video.title && (
-              <div className="flex items-center gap-2 bg-gray-50 px-3 py-2">
-                <Youtube className="h-4 w-4 text-red-600" />
-                <span className="text-xs font-medium text-gray-700">{video.title}</span>
+              <div className="flex items-center gap-2 bg-zinc-900 px-3 py-2">
+                <Youtube className="h-4 w-4 text-red-500" />
+                <span className="text-xs font-medium text-zinc-300">{video.title}</span>
               </div>
             )}
             <div className="relative aspect-video">
@@ -70,16 +67,14 @@ export default function VideoEmbed({ videos }: VideoEmbedProps) {
           href={video.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-3 rounded-lg border border-gray-200 p-3 transition-colors hover:border-orange-300 hover:bg-orange-50"
+          className="flex items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-900/50 p-3 transition hover:border-orange-500/40 hover:bg-zinc-900"
         >
           {getPlatformIcon(video.platform)}
           <div className="flex-1">
-            <p className="text-sm font-medium text-gray-800">
-              {video.title ?? 'Ver vídeo de referência'}
-            </p>
-            <p className="text-xs capitalize text-gray-500">{video.platform}</p>
+            <p className="text-sm font-medium text-white">{video.title ?? 'Ver vídeo de referência'}</p>
+            <p className="text-xs capitalize text-zinc-500">{video.platform}</p>
           </div>
-          <Play className="h-4 w-4 text-gray-400" />
+          <Play className="h-4 w-4 text-zinc-600" />
         </a>
       ))}
     </div>

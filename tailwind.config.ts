@@ -8,15 +8,19 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        display: ['Oswald', 'sans-serif'],
+      },
       colors: {
         brand: {
-          50: '#fff7ed',
-          100: '#ffedd5',
           500: '#f97316',
           600: '#ea580c',
           700: '#c2410c',
-          900: '#7c2d12',
         },
+      },
+      boxShadow: {
+        'orange-glow': '0 0 20px rgba(249, 115, 22, 0.3)',
+        'orange-glow-sm': '0 0 10px rgba(249, 115, 22, 0.2)',
       },
     },
   },

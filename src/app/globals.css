@@ -1,9 +1,49 @@
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   body {
-    @apply bg-gray-50 text-gray-900;
+    @apply bg-zinc-950 text-white;
+    background-image:
+      radial-gradient(ellipse at top, rgba(249, 115, 22, 0.06) 0%, transparent 60%),
+      radial-gradient(ellipse at bottom-right, rgba(249, 115, 22, 0.03) 0%, transparent 50%);
+    background-attachment: fixed;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-zinc-950;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-zinc-700 rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-orange-600;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    background: linear-gradient(135deg, #f97316, #fbbf24);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .border-glow {
+    box-shadow: 0 0 0 1px rgba(249, 115, 22, 0.4), 0 0 20px rgba(249, 115, 22, 0.15);
+  }
+
+  .card-dark {
+    @apply bg-zinc-900 border border-zinc-800 rounded-xl;
+  }
+
+  .card-dark-hover {
+    @apply card-dark transition-all duration-200 hover:border-orange-500/50 hover:shadow-orange-glow-sm;
   }
 }

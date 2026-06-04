@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Wrench, LayoutDashboard, Tag, Inbox, Megaphone, FolderOpen, LogOut, ExternalLink } from 'lucide-react'
+import { Wrench, LayoutDashboard, Tag, Inbox, Megaphone, FolderOpen, Link2, LogOut, ExternalLink } from 'lucide-react'
 
 const navItems = [
   { href: '/admin/dashboard',   label: 'Dashboard',   icon: LayoutDashboard },
@@ -10,6 +10,7 @@ const navItems = [
   { href: '/admin/categorias',  label: 'Categorias',   icon: FolderOpen },
   { href: '/admin/sugestoes',   label: 'Sugestões',    icon: Inbox },
   { href: '/admin/anuncios',    label: 'Anúncios',     icon: Megaphone },
+  { href: '/admin/afiliados',   label: 'Afiliados',    icon: Link2 },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

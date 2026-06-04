@@ -79,6 +79,17 @@ model AdSpace {
   @@map("ad_spaces")
 }
 
+model AffiliateConfig {
+  id        String   @id @default(cuid())
+  platform  String   @unique // "amazon" | "mercadolivre" | "shopee" | "aliexpress" | "magalu"
+  active    Boolean  @default(false)
+  value     String?  // tag/ID para param ou URL base para redirect
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("affiliate_configs")
+}
+
 model Category {
   id          String   @id @default(cuid())
   name        String   @unique

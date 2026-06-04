@@ -5,6 +5,7 @@ import CompatibilityBadge from '@/components/CompatibilityBadge'
 import VideoEmbed from '@/components/VideoEmbed'
 import AdBanner from '@/components/AdBanner'
 import { categoryConfig } from '@/components/CategoryCard'
+import { convertToAffiliateLink } from '@/lib/affiliateLinks'
 import { ArrowLeft, ExternalLink, ShoppingCart } from 'lucide-react'
 
 async function getPart(id: string) {
@@ -39,7 +40,10 @@ const adaptationStyle = {
 
 export default async function PartPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const part = await getPart(id)
+  const [part, affiliateConfigs] = await Promise.all([
+    getPart(id),
+    prisma.affiliateConfig.findMany(),
+  ])
   if (!part) notFound()
 
   const catCfg = categoryConfig[part.category]
@@ -160,7 +164,7 @@ export default async function PartPage({ params }: { params: Promise<{ id: strin
                         <div className="mt-4 flex items-center justify-between border-t border-zinc-100 pt-4 dark:border-zinc-800">
                           <span className="text-xs text-zinc-500">Link verificado pela comunidade</span>
                           <a
-                            href={cp.purchaseLink}
+                            href={convertToAffiliateLink(cp.purchaseLink, affiliateConfigs)}
                             target="_blank"
                             rel="noopener noreferrer sponsored"
                             className="flex items-center gap-2 rounded-xl bg-orange-500 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-orange-600"

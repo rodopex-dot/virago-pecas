@@ -49,7 +49,8 @@ model CompatiblePart {
   partId String
   part   Part   @relation(fields: [partId], references: [id], onDelete: Cascade)
 
-  videos VideoReference[]
+  videos          VideoReference[]
+  linkSuggestions LinkSuggestion[]
 
   @@map("compatible_parts")
 }
@@ -88,6 +89,21 @@ model AffiliateConfig {
   updatedAt DateTime @updatedAt
 
   @@map("affiliate_configs")
+}
+
+model LinkSuggestion {
+  id               String           @id @default(cuid())
+  compatiblePartId String
+  compatiblePart   CompatiblePart   @relation(fields: [compatiblePartId], references: [id], onDelete: Cascade)
+  purchaseLink     String?
+  videoLinks       String?          @db.Text // URLs separadas por \n
+  submitterEmail   String?
+  notes            String?
+  status           SuggestionStatus @default(PENDENTE)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  @@map("link_suggestions")
 }
 
 model Category {

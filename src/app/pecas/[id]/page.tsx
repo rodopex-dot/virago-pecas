@@ -6,6 +6,7 @@ import VideoEmbed from '@/components/VideoEmbed'
 import AdBanner from '@/components/AdBanner'
 import { categoryConfig } from '@/components/CategoryCard'
 import { convertToAffiliateLink } from '@/lib/affiliateLinks'
+import LinkSuggestionForm from '@/components/LinkSuggestionForm'
 import { ArrowLeft, ExternalLink, ShoppingCart } from 'lucide-react'
 
 async function getPart(id: string) {
@@ -160,6 +161,11 @@ export default async function PartPage({ params }: { params: Promise<{ id: strin
                         )}
 
                         {cp.videos.length > 0 && <VideoEmbed videos={cp.videos} />}
+
+                        <LinkSuggestionForm
+                          compatiblePartId={cp.id}
+                          compatiblePartName={cp.name}
+                        />
 
                         {cp.purchaseLink && (
                           <div className="mt-4 flex items-center justify-between border-t border-zinc-100 pt-4 dark:border-zinc-800">

@@ -16,48 +16,28 @@ function getYouTubeId(url: string): string | null {
   return match ? match[1] : null
 }
 
-function YouTubeThumbnail({ video }: { video: VideoReferenceData }) {
+function YouTubeEmbed({ video }: { video: VideoReferenceData }) {
   const videoId = getYouTubeId(video.url)
   if (!videoId) return null
 
   return (
-    <a
-      href={video.url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="group relative block overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800"
-    >
-      {/* Thumbnail */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={`https://img.youtube.com/vi/${videoId}/mqdefault.jpg`}
-        alt={video.title ?? 'Vídeo de referência'}
-        className="w-full object-cover transition-transform duration-300 group-hover:scale-105"
-      />
-
-      {/* Overlay escuro no hover */}
-      <div className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/30" />
-
-      {/* Botão play centralizado */}
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-600/90 shadow-lg transition-transform duration-200 group-hover:scale-110">
-          <Play className="h-5 w-5 translate-x-0.5 fill-white text-white" />
-        </div>
-      </div>
-
-      {/* Título na parte inferior */}
+    <div className="overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800">
       {video.title && (
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent px-3 pb-2 pt-6">
-          <p className="line-clamp-1 text-xs font-medium text-white">{video.title}</p>
+        <div className="flex items-center gap-2 bg-zinc-100 px-3 py-2 dark:bg-zinc-900">
+          <Youtube className="h-4 w-4 text-red-500" />
+          <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">{video.title}</span>
         </div>
       )}
-
-      {/* Badge YouTube */}
-      <div className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-black/70 px-2 py-0.5">
-        <Youtube className="h-3 w-3 text-red-500" />
-        <span className="text-[10px] font-medium text-white">YouTube</span>
+      <div className="relative aspect-video">
+        <iframe
+          src={`https://www.youtube.com/embed/${videoId}`}
+          title={video.title ?? 'Vídeo de referência'}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          className="h-full w-full"
+        />
       </div>
-    </a>
+    </div>
   )
 }
 
@@ -103,14 +83,10 @@ export default function VideoEmbed({ videos }: VideoEmbedProps) {
         Vídeos de Referência
       </h4>
 
-      {/* Grid de thumbnails YouTube */}
-      {youtubeVideos.length > 0 && (
-        <div className={`grid gap-2 ${youtubeVideos.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
-          {youtubeVideos.map(video => (
-            <YouTubeThumbnail key={video.id} video={video} />
-          ))}
-        </div>
-      )}
+      {/* Embeds YouTube */}
+      {youtubeVideos.map(video => (
+        <YouTubeEmbed key={video.id} video={video} />
+      ))}
 
       {/* Links outros (Instagram, TikTok etc.) */}
       {otherVideos.map(video => (

@@ -36,6 +36,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
   },
   Carenagem: {
     icon: Shield,
+    image: '/categories/carenagem.jpg',
     gradient: 'from-purple-600/20 to-purple-900/10',
     glow: 'group-hover:shadow-[0_0_20px_rgba(168,85,247,0.3)]',
     description: 'Rabeta, tanque, plásticos',
@@ -48,6 +49,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
   },
   Acessórios: {
     icon: Star,
+    image: '/categories/acessorios.jpg',
     gradient: 'from-orange-500/20 to-orange-900/10',
     glow: 'group-hover:shadow-[0_0_20px_rgba(249,115,22,0.3)]',
     description: 'Retrovisores, manoplas, farol',
@@ -60,6 +62,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
   },
   Transmissão: {
     icon: Settings,
+    image: '/categories/transmissao.jpg',
     gradient: 'from-zinc-600/20 to-zinc-800/10',
     glow: 'group-hover:shadow-[0_0_20px_rgba(161,161,170,0.2)]',
     description: 'Corrente, pinhão, coroa',

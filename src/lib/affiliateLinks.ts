@@ -11,7 +11,7 @@ export const PLATFORM_META: Record<string, {
   description: string
   hint: string
   placeholder: string
-  method: 'param' | 'redirect'
+  method: 'param' | 'redirect' | 'ml-params'
   paramName?: string
   domains: string[]
 }> = {
@@ -28,10 +28,10 @@ export const PLATFORM_META: Record<string, {
   mercadolivre: {
     label: 'Mercado Livre',
     logo: '🟡',
-    description: 'Programa de Afiliados via Impact Radius. Cole a URL base de rastreamento.',
-    hint: 'Gere em afiliados.mercadolivre.com.br → copie a URL até "?u="',
-    placeholder: 'https://mercadolivre.sjv.io/c/XXXXX/XXXXX/XXXXX?u=',
-    method: 'redirect',
+    description: 'Programa nativo do ML. Cole o link de afiliado gerado no painel (mercadolivre.com.br/social/…).',
+    hint: 'Acesse mercadolivre.com.br/afiliados → gere um link → cole o link completo aqui.',
+    placeholder: 'https://www.mercadolivre.com.br/social/SEU_USUARIO?matt_word=...&matt_tool=...&ref=...',
+    method: 'ml-params',
     domains: ['mercadolivre.com.br', 'mercadolibre.com.br', 'produto.mercadolivre.com.br'],
   },
   shopee: {
@@ -65,6 +65,25 @@ export const PLATFORM_META: Record<string, {
 }
 
 /**
+ * Extrai os parâmetros de rastreamento de um link de afiliado do Mercado Livre
+ * no formato: mercadolivre.com.br/social/USER?matt_word=X&matt_tool=Y&ref=Z
+ */
+function extractMLParams(affiliateUrl: string): Record<string, string> {
+  try {
+    const u = new URL(affiliateUrl)
+    const params: Record<string, string> = {}
+    // Parâmetros de rastreamento nativos do ML
+    for (const key of ['matt_word', 'matt_tool', 'matt_source', 'matt_campaign', 'ref']) {
+      const val = u.searchParams.get(key)
+      if (val) params[key] = val
+    }
+    return params
+  } catch {
+    return {}
+  }
+}
+
+/**
  * Converte uma URL de compra para link de afiliado com base nas configs ativas.
  * Retorna a URL original se nenhuma config corresponder.
  */
@@ -78,7 +97,7 @@ export function convertToAffiliateLink(
   try {
     parsed = new URL(url)
   } catch {
-    return url // URL inválida, retorna como está
+    return url
   }
 
   const hostname = parsed.hostname.toLowerCase().replace(/^www\./, '')
@@ -94,17 +113,26 @@ export function convertToAffiliateLink(
 
     const affiliateValue = config.value.trim()
 
+    // Amazon, AliExpress — injeta ?param=valor na URL do produto
     if (meta.method === 'param' && meta.paramName) {
-      // Injeta parâmetro na URL original (ex: Amazon ?tag=, AliExpress ?aff_fcid=)
-      // Remove o param existente para não duplicar
       parsed.searchParams.delete(meta.paramName)
       parsed.searchParams.set(meta.paramName, affiliateValue)
       return parsed.toString()
     }
 
+    // Mercado Livre — extrai matt_tool, matt_word, ref do link de afiliado
+    // e injeta na URL do produto
+    if (meta.method === 'ml-params') {
+      const mlParams = extractMLParams(affiliateValue)
+      if (Object.keys(mlParams).length === 0) return url // link inválido, não converte
+      for (const [key, val] of Object.entries(mlParams)) {
+        parsed.searchParams.set(key, val)
+      }
+      return parsed.toString()
+    }
+
+    // Shopee, Magalu — prefixa URL com redirect de afiliado
     if (meta.method === 'redirect') {
-      // Prefixa a URL com o redirect de afiliado
-      // Garante que o valor termina com "=" ou "?" para facilitar concatenação
       const base = affiliateValue.endsWith('=') || affiliateValue.endsWith('?')
         ? affiliateValue
         : affiliateValue + (affiliateValue.includes('?') ? '&url=' : '?url=')
@@ -112,10 +140,10 @@ export function convertToAffiliateLink(
     }
   }
 
-  return url // Nenhuma plataforma correspondeu
+  return url
 }
 
-/** Detecta qual plataforma a URL pertence (para exibição no admin, etc.) */
+/** Detecta qual plataforma a URL pertence */
 export function detectPlatform(url: string): string | null {
   try {
     const hostname = new URL(url).hostname.toLowerCase().replace(/^www\./, '')

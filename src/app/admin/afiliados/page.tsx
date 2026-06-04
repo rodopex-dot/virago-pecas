@@ -99,7 +99,9 @@ function PlatformCard({
       {/* Campo de configuração */}
       <div className="px-6 pb-6">
         <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-zinc-500">
-          {meta.method === 'param' ? 'ID / Tag de Afiliado' : 'URL base de rastreamento'}
+          {meta.method === 'param' ? 'ID / Tag de Afiliado'
+            : meta.method === 'ml-params' ? 'Link de afiliado gerado no painel do ML'
+            : 'URL base de rastreamento'}
         </label>
         <input
           type="text"
@@ -120,6 +122,8 @@ function PlatformCard({
             <p className="break-all font-mono text-[10px] text-zinc-500">
               {meta.method === 'param'
                 ? `https://${meta.domains[0]}/produto?${meta.paramName}=${value.trim()}`
+                : meta.method === 'ml-params'
+                ? `https://${meta.domains[0]}/produto-x?matt_tool=XXXX&matt_word=XXXX&ref=XXXX`
                 : `${value.trim().endsWith('=') ? value.trim() : value.trim() + '?url='}https%3A%2F%2F${meta.domains[0]}%2Fproduto`}
             </p>
           </div>

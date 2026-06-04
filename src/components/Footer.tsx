@@ -17,7 +17,9 @@ export default function Footer() {
           </p>
           <nav className="flex gap-5 text-sm text-zinc-500">
             <Link href="/" className="transition hover:text-orange-500">Buscar</Link>
+            <Link href="/manuais" className="transition hover:text-orange-500">Manuais</Link>
             <Link href="/contribuir" className="transition hover:text-orange-500">Contribuir</Link>
+            <Link href="/sobre" className="transition hover:text-orange-500">Sobre</Link>
           </nav>
         </div>
         <div className="mt-6 border-t border-zinc-200 pt-6 text-center text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-600">

@@ -125,6 +125,32 @@ model Category {
   @@map("categories")
 }
 
+model Manual {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  fileUrl     String
+  category    String   @default("Manual")
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("manuals")
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  type      String
+  subject   String?
+  message   String   @db.Text
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@map("contact_messages")
+}
+
 model Suggestion {
   id                 String             @id @default(cuid())
   partName           String

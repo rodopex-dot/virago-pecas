@@ -5,6 +5,12 @@ import { Wrench, PlusCircle, Menu, X } from 'lucide-react'
 import { useState } from 'react'
 import ThemeToggle from './ThemeToggle'
 
+const NAV_LINKS = [
+  { href: '/',         label: 'Buscar Peças' },
+  { href: '/manuais',  label: 'Manuais' },
+  { href: '/sobre',    label: 'Sobre' },
+]
+
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -25,12 +31,15 @@ export default function Header() {
           </Link>
 
           <nav className="hidden items-center gap-4 md:flex">
-            <Link
-              href="/"
-              className="text-sm font-medium text-zinc-600 transition hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
-            >
-              Buscar Peças
-            </Link>
+            {NAV_LINKS.map(({ href, label }) => (
+              <Link
+                key={href}
+                href={href}
+                className="text-sm font-medium text-zinc-600 transition hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+              >
+                {label}
+              </Link>
+            ))}
             <ThemeToggle />
             <Link
               href="/contribuir"
@@ -59,13 +68,16 @@ export default function Header() {
 
         {menuOpen && (
           <div className="border-t border-zinc-200 py-3 dark:border-zinc-800 md:hidden">
-            <Link
-              href="/"
-              className="block py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400"
-              onClick={() => setMenuOpen(false)}
-            >
-              Buscar Peças
-            </Link>
+            {NAV_LINKS.map(({ href, label }) => (
+              <Link
+                key={href}
+                href={href}
+                className="block py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400"
+                onClick={() => setMenuOpen(false)}
+              >
+                {label}
+              </Link>
+            ))}
             <Link
               href="/contribuir"
               className="mt-2 flex items-center gap-1.5 rounded-lg border border-orange-500 bg-orange-500/10 px-4 py-2 text-sm font-semibold text-orange-500"

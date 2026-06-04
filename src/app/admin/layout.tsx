@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Wrench, LayoutDashboard, Tag, Inbox, Megaphone, FolderOpen, Link2, LinkIcon, LogOut, ExternalLink } from 'lucide-react'
+import { Wrench, LayoutDashboard, Tag, Inbox, Megaphone, FolderOpen, Link2, LinkIcon, LogOut, ExternalLink, BookOpen, Mail } from 'lucide-react'
 
 const navItems = [
   { href: '/admin/dashboard',   label: 'Dashboard',    icon: LayoutDashboard },
@@ -10,6 +10,8 @@ const navItems = [
   { href: '/admin/categorias',  label: 'Categorias',    icon: FolderOpen },
   { href: '/admin/sugestoes',   label: 'Sugestões',     icon: Inbox },
   { href: '/admin/links',       label: 'Links',         icon: LinkIcon },
+  { href: '/admin/manuais',     label: 'Manuais',       icon: BookOpen },
+  { href: '/admin/mensagens',   label: 'Mensagens',     icon: Mail },
   { href: '/admin/anuncios',    label: 'Anúncios',      icon: Megaphone },
   { href: '/admin/afiliados',   label: 'Afiliados',     icon: Link2 },
 ]

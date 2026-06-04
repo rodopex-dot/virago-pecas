@@ -30,9 +30,10 @@ function PlatformCard({
   const meta = PLATFORM_META[config.platform]
   if (!meta) return null
 
+  const isManual = meta.method === 'manual'
   const dirty = active !== config.active || value !== (config.value ?? '')
   const hasValue = value.trim().length > 0
-  const isReady = active && hasValue
+  const isReady = isManual ? false : (active && hasValue) // manual nunca fica "verde" — não tem config
 
   const handleSave = async () => {
     setSaving(true)
@@ -83,13 +84,23 @@ function PlatformCard({
             </p>
           </div>
         )}
-        {active && !hasValue && (
+        {/* Plataformas manuais: explicação do fluxo */}
+        {isManual && (
+          <div className="flex items-start gap-2 rounded-xl border border-blue-500/30 bg-blue-500/10 px-4 py-3">
+            <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-400" />
+            <div className="text-xs text-blue-300 space-y-1">
+              <p className="font-semibold">Configuração manual por produto</p>
+              <p>{meta.hint}</p>
+            </div>
+          </div>
+        )}
+        {!isManual && active && !hasValue && (
           <div className="flex items-center gap-2 rounded-xl border border-yellow-500/30 bg-yellow-500/10 px-4 py-2.5">
             <AlertTriangle className="h-4 w-4 shrink-0 text-yellow-400" />
             <p className="text-xs text-yellow-300">Ativo mas sem ID/URL configurado. Preencha o campo abaixo.</p>
           </div>
         )}
-        {!active && (
+        {!isManual && !active && (
           <div className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/50 px-4 py-2.5">
             <Info className="h-4 w-4 shrink-0 text-zinc-500" />
             <p className="text-xs text-zinc-500">Inativo — links não serão convertidos.</p>
@@ -97,56 +108,53 @@ function PlatformCard({
         )}
       </div>
 
-      {/* Campo de configuração */}
-      <div className="px-6 pb-6">
-        <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-zinc-500">
-          {meta.method === 'param' ? 'ID / Tag de Afiliado'
-            : meta.method === 'ml-params' ? 'Link de afiliado gerado no painel do ML'
-            : 'URL base de rastreamento'}
-        </label>
-        <input
-          type="text"
-          value={value}
-          onChange={e => setValue(e.target.value)}
-          placeholder={meta.placeholder}
-          className="w-full rounded-xl border border-zinc-700 bg-zinc-800 px-4 py-2.5 font-mono text-sm text-zinc-300 placeholder-zinc-700 outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
-        />
-        <p className="mt-1.5 flex items-start gap-1.5 text-xs text-zinc-600">
-          <Info className="mt-0.5 h-3 w-3 shrink-0" />
-          {meta.hint}
-        </p>
+      {/* Campo de configuração — apenas para plataformas automáticas */}
+      {!isManual && (
+        <div className="px-6 pb-6">
+          <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-zinc-500">
+            {meta.method === 'param' ? 'ID / Tag de Afiliado' : 'URL base de rastreamento'}
+          </label>
+          <input
+            type="text"
+            value={value}
+            onChange={e => setValue(e.target.value)}
+            placeholder={meta.placeholder}
+            className="w-full rounded-xl border border-zinc-700 bg-zinc-800 px-4 py-2.5 font-mono text-sm text-zinc-300 placeholder-zinc-700 outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+          />
+          <p className="mt-1.5 flex items-start gap-1.5 text-xs text-zinc-600">
+            <Info className="mt-0.5 h-3 w-3 shrink-0" />
+            {meta.hint}
+          </p>
 
-        {/* Preview */}
-        {hasValue && (
-          <div className="mt-3 rounded-xl border border-zinc-700 bg-zinc-800/50 p-3">
-            <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-zinc-600">Exemplo de conversão</p>
-            <p className="break-all font-mono text-[10px] text-zinc-500">
-              {meta.method === 'param'
-                ? `https://${meta.domains[0]}/produto?${meta.paramName}=${value.trim()}`
-                : meta.method === 'ml-params'
-                ? `https://${meta.domains[0]}/produto-x?matt_tool=XXXX&matt_word=XXXX&ref=XXXX`
-                : `${value.trim().endsWith('=') ? value.trim() : value.trim() + '?url='}https%3A%2F%2F${meta.domains[0]}%2Fproduto`}
-            </p>
+          {hasValue && (
+            <div className="mt-3 rounded-xl border border-zinc-700 bg-zinc-800/50 p-3">
+              <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-zinc-600">Exemplo de conversão</p>
+              <p className="break-all font-mono text-[10px] text-zinc-500">
+                {meta.method === 'param'
+                  ? `https://${meta.domains[0]}/produto?${meta.paramName}=${value.trim()}`
+                  : `${value.trim().endsWith('=') ? value.trim() : value.trim() + '?url='}https%3A%2F%2F${meta.domains[0]}%2Fproduto`}
+              </p>
+            </div>
+          )}
+
+          <div className="mt-4 flex items-center justify-end gap-3">
+            {dirty && <span className="text-xs text-zinc-500">Alterações não salvas</span>}
+            <button
+              onClick={handleSave}
+              disabled={saving || !dirty}
+              className={`flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold transition ${
+                saved ? 'bg-green-600 text-white'
+                : dirty ? 'bg-orange-500 text-white hover:bg-orange-600'
+                : 'cursor-not-allowed border border-zinc-700 text-zinc-600'
+              } disabled:opacity-60`}
+            >
+              {saving ? <><Loader2 className="h-4 w-4 animate-spin" />Salvando...</>
+              : saved  ? <><CheckCircle className="h-4 w-4" />Salvo!</>
+              : <><Save className="h-4 w-4" />Salvar</>}
+            </button>
           </div>
-        )}
-
-        <div className="mt-4 flex items-center justify-end gap-3">
-          {dirty && <span className="text-xs text-zinc-500">Alterações não salvas</span>}
-          <button
-            onClick={handleSave}
-            disabled={saving || !dirty}
-            className={`flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold transition ${
-              saved ? 'bg-green-600 text-white'
-              : dirty ? 'bg-orange-500 text-white hover:bg-orange-600'
-              : 'cursor-not-allowed border border-zinc-700 text-zinc-600'
-            } disabled:opacity-60`}
-          >
-            {saving ? <><Loader2 className="h-4 w-4 animate-spin" />Salvando...</>
-            : saved  ? <><CheckCircle className="h-4 w-4" />Salvo!</>
-            : <><Save className="h-4 w-4" />Salvar</>}
-          </button>
         </div>
-      </div>
+      )}
     </div>
   )
 }

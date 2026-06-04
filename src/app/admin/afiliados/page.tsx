@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react'
 import {
   Link2, ToggleLeft, ToggleRight, Save, Loader2,
-  CheckCircle, Info, AlertTriangle,
+  CheckCircle, Info, AlertTriangle, FlaskConical,
+  ArrowRight, ExternalLink, XCircle, Copy,
 } from 'lucide-react'
 import { PLATFORM_META } from '@/lib/affiliateLinks'
 
@@ -150,6 +151,160 @@ function PlatformCard({
   )
 }
 
+// ─── Testador de conversão ────────────────────────────────────────────────────
+interface TestResult {
+  original: string
+  converted: string
+  changed: boolean
+  platform: string | null
+}
+
+function LinkTester() {
+  const [url, setUrl] = useState('')
+  const [result, setResult] = useState<TestResult | null>(null)
+  const [testing, setTesting] = useState(false)
+  const [copied, setCopied] = useState(false)
+
+  const handleTest = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!url.trim()) return
+    setTesting(true)
+    setResult(null)
+    try {
+      const res = await fetch('/api/admin/affiliates/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url }),
+      })
+      const data = await res.json()
+      setResult(data)
+    } finally {
+      setTesting(false)
+    }
+  }
+
+  const handleCopy = () => {
+    if (!result) return
+    navigator.clipboard.writeText(result.converted)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  const platformLabel = result?.platform ? (PLATFORM_META[result.platform]?.label ?? result.platform) : null
+
+  return (
+    <div className="mb-8 rounded-2xl border border-orange-500/20 bg-zinc-900 p-6">
+      <h2 className="font-display mb-1 flex items-center gap-2 text-lg font-bold uppercase tracking-wide text-white">
+        <FlaskConical className="h-5 w-5 text-orange-500" />
+        Testador de Conversão
+      </h2>
+      <p className="mb-4 text-xs text-zinc-500">
+        Cole qualquer link de produto para ver como ele ficará após a conversão de afiliado.
+      </p>
+
+      <form onSubmit={handleTest} className="flex gap-2">
+        <input
+          type="url"
+          value={url}
+          onChange={e => setUrl(e.target.value)}
+          placeholder="https://www.mercadolivre.com.br/produto/... ou amazon.com.br/..."
+          className="flex-1 rounded-xl border border-zinc-700 bg-zinc-800 px-4 py-2.5 text-sm text-white placeholder-zinc-600 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+        />
+        <button
+          type="submit"
+          disabled={testing || !url.trim()}
+          className="flex items-center gap-2 rounded-xl bg-orange-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-orange-600 disabled:opacity-50"
+        >
+          {testing ? <Loader2 className="h-4 w-4 animate-spin" /> : <FlaskConical className="h-4 w-4" />}
+          Testar
+        </button>
+      </form>
+
+      {result && (
+        <div className="mt-4 space-y-3">
+          {/* Plataforma detectada */}
+          <div className="flex items-center gap-2 text-xs text-zinc-500">
+            <span>Plataforma detectada:</span>
+            <span className={`font-semibold ${platformLabel ? 'text-orange-400' : 'text-zinc-600'}`}>
+              {platformLabel ?? 'Não reconhecida'}
+            </span>
+          </div>
+
+          {/* Original */}
+          <div>
+            <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-zinc-600">URL original</p>
+            <p className="break-all rounded-lg border border-zinc-800 bg-zinc-800/50 px-3 py-2 font-mono text-xs text-zinc-500">
+              {result.original}
+            </p>
+          </div>
+
+          {/* Convertida */}
+          <div>
+            <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-zinc-600">URL convertida</p>
+            <div className={`flex items-start gap-2 rounded-lg border px-3 py-2 ${
+              result.changed
+                ? 'border-green-500/30 bg-green-500/5'
+                : 'border-zinc-700 bg-zinc-800/50'
+            }`}>
+              <p className={`flex-1 break-all font-mono text-xs ${result.changed ? 'text-green-300' : 'text-zinc-500'}`}>
+                {result.converted}
+              </p>
+            </div>
+          </div>
+
+          {/* Resultado */}
+          {result.changed ? (
+            <div className="flex items-center justify-between rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-3">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 text-green-400" />
+                <p className="text-xs text-green-300 font-semibold">
+                  Conversão bem-sucedida — o link de afiliado está sendo gerado corretamente.
+                </p>
+              </div>
+              <div className="flex shrink-0 gap-2 ml-4">
+                <button
+                  onClick={handleCopy}
+                  className="flex items-center gap-1.5 rounded-lg border border-green-500/40 px-3 py-1.5 text-xs font-semibold text-green-400 hover:bg-green-500/10"
+                >
+                  {copied ? <CheckCircle className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                  {copied ? 'Copiado!' : 'Copiar'}
+                </button>
+                <a
+                  href={result.converted}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 rounded-lg bg-green-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-green-700"
+                >
+                  <ExternalLink className="h-3.5 w-3.5" />
+                  Abrir e verificar
+                </a>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 rounded-xl border border-yellow-500/30 bg-yellow-500/10 px-4 py-3">
+              <XCircle className="h-4 w-4 shrink-0 text-yellow-400" />
+              <p className="text-xs text-yellow-300">
+                {!platformLabel
+                  ? 'Plataforma não reconhecida. Verifique se o domínio é suportado.'
+                  : `Plataforma ${platformLabel} reconhecida mas sem afiliado ativo/configurado.`}
+              </p>
+            </div>
+          )}
+
+          {/* Diff visual */}
+          {result.changed && (
+            <div className="flex items-center gap-2 text-[10px] text-zinc-600">
+              <ArrowRight className="h-3 w-3 text-orange-500" />
+              <span>Parâmetros adicionados ao link original para rastrear sua comissão</span>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── Página principal ─────────────────────────────────────────────────────────
 export default function AfiliadosPage() {
   const [configs, setConfigs] = useState<AffiliateConfig[]>([])
   const [loading, setLoading] = useState(true)
@@ -204,6 +359,10 @@ export default function AfiliadosPage() {
         </ul>
       </div>
 
+      {/* Testador */}
+      <LinkTester />
+
+      {/* Cards de plataforma */}
       {loading ? (
         <div className="flex justify-center py-16">
           <Loader2 className="h-6 w-6 animate-spin text-orange-500" />

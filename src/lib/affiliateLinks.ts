@@ -121,10 +121,23 @@ export function convertToAffiliateLink(
     }
 
     // Mercado Livre — extrai matt_tool, matt_word, ref do link de afiliado
-    // e injeta na URL do produto
+    // e injeta na URL do produto (limpa o hash e params de sessão antes)
     if (meta.method === 'ml-params') {
       const mlParams = extractMLParams(affiliateValue)
       if (Object.keys(mlParams).length === 0) return url // link inválido, não converte
+
+      // Remove o hash (#polycard_client=..., #from=...) — é contexto de busca
+      // e quebra o link quando aberto diretamente
+      parsed.hash = ''
+
+      // Remove parâmetros de sessão/tracking do ML que não pertencem ao link direto
+      const mlSessionParams = [
+        'tracking_id', 'sid', 'position', 'search_layout', 'type',
+        'be_origin', 'forceInApp',
+      ]
+      mlSessionParams.forEach(p => parsed.searchParams.delete(p))
+
+      // Injeta os parâmetros de afiliado
       for (const [key, val] of Object.entries(mlParams)) {
         parsed.searchParams.set(key, val)
       }

@@ -8,7 +8,7 @@ export async function POST() {
   try {
     // Busca todas as peças compatíveis sem imagem
     const parts = await prisma.compatiblePart.findMany({
-      where: { imageUrl: null },
+      where: { imageUrl: null, purchaseLink: { not: null } },
       select: { id: true, purchaseLink: true, name: true },
     })
 
@@ -27,7 +27,7 @@ export async function POST() {
       await Promise.all(
         batch.map(async (part) => {
           try {
-            const imageUrl = await fetchOgImage(part.purchaseLink)
+            const imageUrl = await fetchOgImage(part.purchaseLink!)
             if (imageUrl) {
               await prisma.compatiblePart.update({
                 where: { id: part.id },

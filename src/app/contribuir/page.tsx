@@ -202,9 +202,9 @@ function ContribuirForm() {
                 placeholder="Ex: Showa, Cofap, EBC..." className={inputClass} />
             </div>
             <div>
-              <label className={labelClass}>Link de compra *</label>
+              <label className={labelClass}>Link de compra</label>
               <input name="purchaseLink" type="url" value={form.purchaseLink} onChange={handleChange}
-                required placeholder="https://..." className={inputClass} />
+                placeholder="https://... (opcional)" className={inputClass} />
             </div>
           </div>
         </div>

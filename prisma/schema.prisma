@@ -38,7 +38,7 @@ model CompatiblePart {
   brand              String?
   partNumber         String?
   price              Float?
-  purchaseLink       String
+  purchaseLink       String?
   imageUrl           String?
   compatibilityLevel CompatibilityLevel
   adaptationText     String?

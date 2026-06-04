@@ -269,11 +269,11 @@ export default function PartDetailPage({ params }: { params: Promise<{ id: strin
                     placeholder="0.00" className={inputClass} />
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-zinc-500">Link de Compra *</label>
+                  <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-zinc-500">Link de Compra</label>
                   <input type="url" value={form.purchaseLink}
                     onChange={e => setForm(f => ({ ...f, purchaseLink: e.target.value }))}
                     onBlur={handleUrlBlur}
-                    required placeholder="https://..." className={inputClass} />
+                    placeholder="https://... (opcional)" className={inputClass} />
                 </div>
               </div>
 

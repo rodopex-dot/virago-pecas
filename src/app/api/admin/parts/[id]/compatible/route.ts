@@ -11,12 +11,13 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const body = await request.json()
     const { name, brand, partNumber, price, purchaseLink, compatibilityLevel, adaptationText, notes, videoLinks, imageUrl: providedImageUrl } = body
 
-    if (!name?.trim() || !purchaseLink?.trim() || !VALID_LEVELS.includes(compatibilityLevel)) {
+    if (!name?.trim() || !VALID_LEVELS.includes(compatibilityLevel)) {
       return NextResponse.json({ error: 'Campos obrigatórios ausentes.' }, { status: 400 })
     }
 
-    // Auto-busca imagem se não fornecida
-    const imageUrl = providedImageUrl || await fetchOgImage(purchaseLink.trim()).catch(() => null)
+    // Auto-busca imagem se link fornecido e imagem não fornecida
+    const cleanLink = purchaseLink?.trim() || null
+    const imageUrl = providedImageUrl || (cleanLink ? await fetchOgImage(cleanLink).catch(() => null) : null)
 
     const videos: { url: string; platform: string; title?: string }[] = []
     if (videoLinks) {
@@ -36,7 +37,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         brand: brand?.trim() || null,
         partNumber: partNumber?.trim() || null,
         price: price ? parseFloat(price) : null,
-        purchaseLink: purchaseLink.trim(),
+        purchaseLink: cleanLink,
         imageUrl: imageUrl || null,
         compatibilityLevel,
         adaptationText: adaptationText?.trim() || null,

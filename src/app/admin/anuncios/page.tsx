@@ -214,9 +214,16 @@ export default function AnunciosPage() {
       })
   }, [])
 
+  // Extrai o ca-pub-XXXX de qualquer formato colado (script completo, src=, ou só o ID)
+  const extractCaPub = (text: string): string => {
+    const match = text.match(/ca-pub-\d+/)
+    return match ? match[0] : text.trim()
+  }
+
   const handleAdsenseChange = (val: string) => {
-    setAdsenseId(val)
-    setAdsenseDirty(val !== originalAdsenseId)
+    const extracted = extractCaPub(val)
+    setAdsenseId(extracted)
+    setAdsenseDirty(extracted !== originalAdsenseId)
   }
 
   const handleAdsenseSave = async () => {
@@ -296,23 +303,23 @@ export default function AnunciosPage() {
           Script Global do AdSense
         </h2>
         <p className="mb-5 text-xs text-zinc-500">
-          Cole seu ID de publisher abaixo. O script será injetado automaticamente em todas as páginas do site.
+          Cole o código completo do AdSense ou apenas o <span className="font-mono text-zinc-400">ca-pub-...</span>. O ID é extraído automaticamente e o script injetado em todas as páginas.
         </p>
 
         <div className="space-y-3">
           <div>
             <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-zinc-500">
-              ID de Publisher (ca-pub-...)
+              Código do AdSense ou ID de Publisher
             </label>
-            <input
-              type="text"
+            <textarea
+              rows={4}
               value={adsenseId}
               onChange={e => handleAdsenseChange(e.target.value)}
-              placeholder="ca-pub-XXXXXXXXXXXXXXXX"
-              className="w-full rounded-xl border border-zinc-700 bg-zinc-800 px-4 py-2.5 font-mono text-sm text-white placeholder-zinc-600 outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+              placeholder={`Cole aqui o código completo ou só o ID:\n\n<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>\n\nou simplesmente: ca-pub-XXXXXXXXXXXXXXXX`}
+              className="w-full rounded-xl border border-zinc-700 bg-zinc-800 px-4 py-3 font-mono text-sm text-white placeholder-zinc-700 outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
             />
             <p className="mt-1.5 text-xs text-zinc-600">
-              Encontre em <span className="text-zinc-500">adsense.google.com → Conta → Informações da conta</span>
+              O <span className="font-mono text-zinc-500">ca-pub-...</span> é extraído automaticamente do código colado.
             </p>
           </div>
 
@@ -331,7 +338,7 @@ export default function AnunciosPage() {
 
           {/* Status */}
           {adsenseId && !adsenseId.startsWith('ca-pub-') && (
-            <p className="text-xs text-yellow-500">⚠ O ID deve começar com <span className="font-mono">ca-pub-</span></p>
+            <p className="text-xs text-yellow-500">⚠ ID não reconhecido — verifique se o código contém <span className="font-mono">ca-pub-</span></p>
           )}
           {!adsenseId && originalAdsenseId && (
             <p className="text-xs text-zinc-500">Script removido — salve para confirmar.</p>

@@ -4,6 +4,8 @@ import {
   BookOpen, Download, FileText, ExternalLink, Bike, FolderOpen
 } from 'lucide-react'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata = {
   title: 'Manuais e Catálogos — Virago 250 Peças',
   description:

@@ -1,9 +1,11 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
+import Script from 'next/script'
 import './globals.css'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import ThemeProvider from '@/components/ThemeProvider'
+import { prisma } from '@/lib/prisma'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -14,12 +16,31 @@ export const metadata: Metadata = {
   keywords: 'Yamaha Virago 250, peças compatíveis, moto custom, adaptação, freio, suspensão',
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+async function getAdsenseId(): Promise<string | null> {
+  try {
+    const cfg = await prisma.siteConfig.findUnique({ where: { key: 'adsense_publisher_id' } })
+    return cfg?.value ?? null
+  } catch {
+    return null
+  }
+}
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const adsenseId = await getAdsenseId()
+
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {adsenseId && (
+          <Script
+            async
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseId}`}
+            crossOrigin="anonymous"
+            strategy="afterInteractive"
+          />
+        )}
       </head>
       <body className={inter.className}>
         <ThemeProvider>

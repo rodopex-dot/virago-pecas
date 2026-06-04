@@ -80,6 +80,15 @@ model AdSpace {
   @@map("ad_spaces")
 }
 
+model SiteConfig {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String?  @db.Text
+  updatedAt DateTime @updatedAt
+
+  @@map("site_configs")
+}
+
 model AffiliateConfig {
   id        String   @id @default(cuid())
   platform  String   @unique // "amazon" | "mercadolivre" | "shopee" | "aliexpress" | "magalu"

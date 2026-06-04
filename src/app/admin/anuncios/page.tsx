@@ -5,6 +5,7 @@ import {
   Megaphone, ToggleLeft, ToggleRight, Save,
   Loader2, CheckCircle, Info, Code2,
   LayoutTemplate, PanelRight, SplitSquareHorizontal,
+  Globe,
 } from 'lucide-react'
 
 interface AdSpace {
@@ -192,13 +193,45 @@ function AdCard({
 export default function AnunciosPage() {
   const [adSpaces, setAdSpaces] = useState<AdSpace[]>([])
   const [loading, setLoading] = useState(true)
+  const [adsenseId, setAdsenseId] = useState('')
+  const [adsenseSaved, setAdsenseSaved] = useState(false)
+  const [adsenseSaving, setAdsenseSaving] = useState(false)
+  const [adsenseDirty, setAdsenseDirty] = useState(false)
+  const [originalAdsenseId, setOriginalAdsenseId] = useState('')
 
   useEffect(() => {
     fetch('/api/admin/ad-spaces')
       .then(r => r.json())
       .then(setAdSpaces)
       .finally(() => setLoading(false))
+
+    fetch('/api/admin/site-config')
+      .then(r => r.json())
+      .then(data => {
+        const id = data.adsense_publisher_id ?? ''
+        setAdsenseId(id)
+        setOriginalAdsenseId(id)
+      })
   }, [])
+
+  const handleAdsenseChange = (val: string) => {
+    setAdsenseId(val)
+    setAdsenseDirty(val !== originalAdsenseId)
+  }
+
+  const handleAdsenseSave = async () => {
+    setAdsenseSaving(true)
+    await fetch('/api/admin/site-config', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key: 'adsense_publisher_id', value: adsenseId }),
+    })
+    setOriginalAdsenseId(adsenseId)
+    setAdsenseDirty(false)
+    setAdsenseSaving(false)
+    setAdsenseSaved(true)
+    setTimeout(() => setAdsenseSaved(false), 2500)
+  }
 
   const handleSave = async (id: string, active: boolean, adCode: string) => {
     const res = await fetch(`/api/admin/ad-spaces/${id}`, {
@@ -238,8 +271,8 @@ export default function AnunciosPage() {
           <li>1. Crie uma conta em <span className="font-mono text-blue-300">adsense.google.com</span> e adicione o site</li>
           <li>2. Aguarde a aprovação (pode levar alguns dias)</li>
           <li>3. Crie unidades de anúncio e copie o código HTML de cada uma</li>
-          <li>4. Cole o código no campo abaixo e ative o espaço correspondente</li>
-          <li>5. Adicione o script global do AdSense no <span className="font-mono text-blue-300">src/app/layout.tsx</span></li>
+          <li>4. Cole o código de cada unidade de anúncio no campo correspondente abaixo e ative</li>
+          <li>5. Cole seu ID de publisher (ca-pub-...) no campo de script global abaixo</li>
         </ol>
       </div>
 
@@ -256,25 +289,83 @@ export default function AnunciosPage() {
         </div>
       )}
 
-      {/* Script global info */}
-      <div className="mt-8 rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
-        <h2 className="font-display mb-3 text-sm font-bold uppercase tracking-widest text-zinc-400">
-          Script global do AdSense
+      {/* Script global do AdSense — campo editável */}
+      <div className="mt-8 rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
+        <h2 className="font-display mb-1 flex items-center gap-2 text-lg font-bold uppercase tracking-wide text-white">
+          <Globe className="h-5 w-5 text-orange-500" />
+          Script Global do AdSense
         </h2>
-        <p className="mb-3 text-xs text-zinc-500">
-          Adicione uma única vez no arquivo <code className="text-zinc-400">src/app/layout.tsx</code>, dentro da tag <code className="text-zinc-400">&lt;head&gt;</code>:
+        <p className="mb-5 text-xs text-zinc-500">
+          Cole seu ID de publisher abaixo. O script será injetado automaticamente em todas as páginas do site.
         </p>
-        <pre className="overflow-x-auto rounded-xl border border-zinc-700 bg-zinc-800 p-4 text-xs text-zinc-300">
-{`<Script
+
+        <div className="space-y-3">
+          <div>
+            <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-zinc-500">
+              ID de Publisher (ca-pub-...)
+            </label>
+            <input
+              type="text"
+              value={adsenseId}
+              onChange={e => handleAdsenseChange(e.target.value)}
+              placeholder="ca-pub-XXXXXXXXXXXXXXXX"
+              className="w-full rounded-xl border border-zinc-700 bg-zinc-800 px-4 py-2.5 font-mono text-sm text-white placeholder-zinc-600 outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+            />
+            <p className="mt-1.5 text-xs text-zinc-600">
+              Encontre em <span className="text-zinc-500">adsense.google.com → Conta → Informações da conta</span>
+            </p>
+          </div>
+
+          {/* Preview do script gerado */}
+          {adsenseId.startsWith('ca-pub-') && (
+            <div className="rounded-xl border border-zinc-700 bg-zinc-800/50 p-3">
+              <p className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-zinc-600">Script que será injetado no site</p>
+              <pre className="overflow-x-auto text-[11px] text-green-400">{`<Script
   async
-  src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
+  src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseId}"
   crossOrigin="anonymous"
   strategy="afterInteractive"
-/>`}
-        </pre>
-        <p className="mt-2 text-xs text-zinc-600">
-          Substitua <code className="text-zinc-500">ca-pub-XXXXXXXXXXXXXXXX</code> pelo seu ID de publisher do AdSense.
-        </p>
+/>`}</pre>
+            </div>
+          )}
+
+          {/* Status */}
+          {adsenseId && !adsenseId.startsWith('ca-pub-') && (
+            <p className="text-xs text-yellow-500">⚠ O ID deve começar com <span className="font-mono">ca-pub-</span></p>
+          )}
+          {!adsenseId && originalAdsenseId && (
+            <p className="text-xs text-zinc-500">Script removido — salve para confirmar.</p>
+          )}
+          {!adsenseId && !originalAdsenseId && (
+            <div className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/50 px-4 py-3">
+              <Info className="h-4 w-4 shrink-0 text-zinc-500" />
+              <p className="text-xs text-zinc-500">Sem ID configurado — o script do AdSense não será carregado.</p>
+            </div>
+          )}
+          {originalAdsenseId && adsenseId === originalAdsenseId && (
+            <div className="flex items-center gap-2 rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-3">
+              <CheckCircle className="h-4 w-4 shrink-0 text-green-400" />
+              <p className="text-xs text-green-300">Script ativo — AdSense será carregado em todas as páginas.</p>
+            </div>
+          )}
+
+          <div className="flex items-center justify-end gap-3">
+            {adsenseDirty && <span className="text-xs text-zinc-500">Alterações não salvas</span>}
+            <button
+              onClick={handleAdsenseSave}
+              disabled={adsenseSaving || !adsenseDirty}
+              className={`flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold transition ${
+                adsenseSaved ? 'bg-green-600 text-white'
+                : adsenseDirty ? 'bg-orange-500 text-white hover:bg-orange-600'
+                : 'cursor-not-allowed border border-zinc-700 text-zinc-600'
+              } disabled:opacity-60`}
+            >
+              {adsenseSaving ? <><Loader2 className="h-4 w-4 animate-spin" />Salvando...</>
+              : adsenseSaved ? <><CheckCircle className="h-4 w-4" />Salvo!</>
+              : <><Save className="h-4 w-4" />Salvar</>}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   )

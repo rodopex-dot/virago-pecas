@@ -12,10 +12,14 @@ interface Part {
   _count: { compatibleParts: number }
 }
 
+interface Category { id: string; name: string }
+
 const inputClass = 'w-full rounded-xl border border-zinc-700 bg-zinc-800 px-4 py-2.5 text-sm text-white placeholder-zinc-600 outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20'
+const selectClass = 'w-full rounded-xl border border-zinc-700 bg-zinc-800 px-4 py-2.5 text-sm text-white outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20'
 
 export default function AdminPartsPage() {
   const [parts, setParts] = useState<Part[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [showForm, setShowForm] = useState(false)
@@ -26,17 +30,20 @@ export default function AdminPartsPage() {
 
   const load = () => {
     setLoading(true)
-    fetch('/api/admin/parts')
-      .then(r => r.json())
-      .then(setParts)
-      .finally(() => setLoading(false))
+    Promise.all([
+      fetch('/api/admin/parts').then(r => r.json()),
+      fetch('/api/admin/categories').then(r => r.json()),
+    ]).then(([partsData, catsData]) => {
+      setParts(partsData)
+      setCategories(catsData)
+    }).finally(() => setLoading(false))
   }
 
   useEffect(() => { load() }, [])
 
   const openCreate = () => {
     setEditPart(null)
-    setForm({ name: '', category: '', description: '' })
+    setForm({ name: '', category: categories[0]?.name ?? '', description: '' })
     setShowForm(true)
   }
 
@@ -75,8 +82,6 @@ export default function AdminPartsPage() {
     p.name.toLowerCase().includes(search.toLowerCase()) ||
     p.category.toLowerCase().includes(search.toLowerCase())
   )
-
-  const categories = [...new Set(parts.map(p => p.category))]
 
   return (
     <div className="p-8">
@@ -174,7 +179,7 @@ export default function AdminPartsPage() {
         </div>
       )}
 
-      {/* Modal de criar/editar */}
+      {/* Modal criar/editar */}
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-2xl border border-zinc-700 bg-zinc-900 p-6">
@@ -184,28 +189,39 @@ export default function AdminPartsPage() {
             <form onSubmit={handleSave} className="space-y-4">
               <div>
                 <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-zinc-500">Nome *</label>
-                <input value={form.name} onChange={e => setForm(f => ({...f, name: e.target.value}))}
-                  required placeholder="Ex: Amortecedor Traseiro" className={inputClass} />
+                <input
+                  value={form.name}
+                  onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                  required placeholder="Ex: Amortecedor Traseiro"
+                  className={inputClass}
+                />
               </div>
               <div>
                 <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-zinc-500">Categoria *</label>
-                <input
-                  list="cats" value={form.category}
-                  onChange={e => setForm(f => ({...f, category: e.target.value}))}
-                  required placeholder="Ex: Suspensão, Freios, Motor..."
-                  className={inputClass}
-                />
-                <datalist id="cats">
-                  {categories.map(c => <option key={c} value={c} />)}
-                  {['Freios','Motor','Suspensão','Carenagem','Cabos','Acessórios','Elétrica','Transmissão'].map(c =>
-                    <option key={c} value={c} />
-                  )}
-                </datalist>
+                <select
+                  value={form.category}
+                  onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
+                  required
+                  className={selectClass}
+                >
+                  <option value="">Selecione uma categoria...</option>
+                  {categories.map(c => (
+                    <option key={c.id} value={c.name}>{c.name}</option>
+                  ))}
+                </select>
+                <p className="mt-1 text-xs text-zinc-600">
+                  Gerencie as categorias em{' '}
+                  <a href="/admin/categorias" className="text-orange-500 hover:underline">Admin → Categorias</a>
+                </p>
               </div>
               <div>
                 <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-zinc-500">Descrição</label>
-                <textarea value={form.description} onChange={e => setForm(f => ({...f, description: e.target.value}))}
-                  rows={3} placeholder="Descrição opcional..." className={inputClass} />
+                <textarea
+                  value={form.description}
+                  onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+                  rows={3} placeholder="Descrição opcional..."
+                  className={inputClass}
+                />
               </div>
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setShowForm(false)}

@@ -79,6 +79,16 @@ model AdSpace {
   @@map("ad_spaces")
 }
 
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("categories")
+}
+
 model Suggestion {
   id                 String             @id @default(cuid())
   partName           String

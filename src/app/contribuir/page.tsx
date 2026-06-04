@@ -1,11 +1,13 @@
 'use client'
 
-import { useState, Suspense } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, CheckCircle, PlusCircle, Loader2 } from 'lucide-react'
 
 type CompatibilityLevel = 'ENCAIXE_PERFEITO' | 'ADAPTACAO_SIMPLES' | 'ADAPTACAO_COMPLEXA'
+
+interface Category { id: string; name: string; description?: string }
 
 const levelOptions: { value: CompatibilityLevel; label: string; description: string; base: string; selected: string }[] = [
   {
@@ -32,6 +34,7 @@ const levelOptions: { value: CompatibilityLevel; label: string; description: str
 ]
 
 const inputClass = 'w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm text-zinc-900 placeholder-zinc-400 outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:placeholder-zinc-600'
+const selectClass = 'w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm text-zinc-900 outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white'
 const labelClass = 'mb-1.5 block text-xs font-bold uppercase tracking-widest text-zinc-500'
 const cardClass = 'rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900'
 
@@ -39,8 +42,10 @@ function ContribuirForm() {
   const searchParams = useSearchParams()
   const initialPart = searchParams.get('peca') ?? ''
 
+  const [categories, setCategories] = useState<Category[]>([])
   const [form, setForm] = useState({
     partName: initialPart,
+    partCategory: '',
     compatiblePartName: '',
     brand: '',
     purchaseLink: '',
@@ -51,6 +56,13 @@ function ContribuirForm() {
   })
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState('')
+
+  useEffect(() => {
+    fetch('/api/categories')
+      .then(r => r.json())
+      .then(setCategories)
+      .catch(() => {})
+  }, [])
 
   const needsAdaptation =
     form.compatibilityLevel === 'ADAPTACAO_SIMPLES' ||
@@ -106,8 +118,9 @@ function ContribuirForm() {
           </Link>
           <button
             onClick={() => {
-              setForm({ partName: '', compatiblePartName: '', brand: '', purchaseLink: '',
-                compatibilityLevel: '', adaptationText: '', videoLinks: '', submitterEmail: '' })
+              setForm({ partName: '', partCategory: '', compatiblePartName: '', brand: '',
+                purchaseLink: '', compatibilityLevel: '', adaptationText: '',
+                videoLinks: '', submitterEmail: '' })
               setStatus('idle')
             }}
             className="rounded-xl border border-zinc-300 px-5 py-2.5 font-semibold text-zinc-700 hover:border-zinc-400 dark:border-zinc-700 dark:text-zinc-300 dark:hover:border-zinc-500"
@@ -143,12 +156,30 @@ function ContribuirForm() {
           <h2 className="mb-4 font-display text-sm font-bold uppercase tracking-widest text-orange-500">
             Peça original da Virago
           </h2>
-          <label className={labelClass}>Nome da peça original *</label>
-          <input
-            name="partName" value={form.partName} onChange={handleChange} required
-            placeholder="Ex: Amortecedor traseiro, Pastilha de freio dianteira..."
-            className={inputClass}
-          />
+          <div className="space-y-3">
+            <div>
+              <label className={labelClass}>Nome da peça original *</label>
+              <input
+                name="partName" value={form.partName} onChange={handleChange} required
+                placeholder="Ex: Amortecedor traseiro, Pastilha de freio dianteira..."
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className={labelClass}>Categoria</label>
+              <select
+                name="partCategory"
+                value={form.partCategory}
+                onChange={handleChange}
+                className={selectClass}
+              >
+                <option value="">Selecione uma categoria (opcional)</option>
+                {categories.map(c => (
+                  <option key={c.id} value={c.name}>{c.name}</option>
+                ))}
+              </select>
+            </div>
+          </div>
         </div>
 
         {/* Peça compatível */}

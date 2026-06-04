@@ -1,15 +1,17 @@
 'use client'
 
 import { useState } from 'react'
-import { Link2, X, Loader2, CheckCircle, ChevronDown } from 'lucide-react'
+import { Link2, Video, X, Loader2, CheckCircle, ShoppingCart } from 'lucide-react'
 
 interface Props {
   compatiblePartId: string
   compatiblePartName: string
 }
 
+type Mode = null | 'compra' | 'video'
+
 export default function LinkSuggestionForm({ compatiblePartId, compatiblePartName }: Props) {
-  const [open, setOpen] = useState(false)
+  const [mode, setMode] = useState<Mode>(null)
   const [form, setForm] = useState({ purchaseLink: '', videoLinks: '', submitterEmail: '', notes: '' })
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [error, setError] = useState('')
@@ -17,7 +19,7 @@ export default function LinkSuggestionForm({ compatiblePartId, compatiblePartNam
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!form.purchaseLink.trim() && !form.videoLinks.trim()) {
-      setError('Informe ao menos um link de compra ou vídeo.')
+      setError('Informe ao menos um link.')
       return
     }
     setStatus('loading')
@@ -39,6 +41,13 @@ export default function LinkSuggestionForm({ compatiblePartId, compatiblePartNam
     }
   }
 
+  const handleClose = () => {
+    setMode(null)
+    setForm({ purchaseLink: '', videoLinks: '', submitterEmail: '', notes: '' })
+    setStatus('idle')
+    setError('')
+  }
+
   const inputClass = 'w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:placeholder-zinc-600'
   const labelClass = 'mb-1 block text-xs font-semibold text-zinc-500 dark:text-zinc-400'
 
@@ -47,56 +56,74 @@ export default function LinkSuggestionForm({ compatiblePartId, compatiblePartNam
       <div className="mt-3 flex items-center gap-2 rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm text-green-600 dark:text-green-400">
         <CheckCircle className="h-4 w-4 shrink-0" />
         Sugestão enviada! Será analisada pela equipe.
-        <button onClick={() => { setStatus('idle'); setForm({ purchaseLink: '', videoLinks: '', submitterEmail: '', notes: '' }); setOpen(false) }}
-          className="ml-auto text-xs underline opacity-70 hover:opacity-100">fechar</button>
+        <button onClick={handleClose} className="ml-auto text-xs underline opacity-70 hover:opacity-100">fechar</button>
       </div>
     )
   }
 
   return (
     <div className="mt-3 border-t border-zinc-100 pt-3 dark:border-zinc-800">
-      {!open ? (
-        <button
-          onClick={() => setOpen(true)}
-          className="flex items-center gap-1.5 text-xs text-zinc-400 transition hover:text-orange-500 dark:text-zinc-500 dark:hover:text-orange-400"
-        >
-          <Link2 className="h-3.5 w-3.5" />
-          Sugerir link de compra ou vídeo
-          <ChevronDown className="h-3 w-3" />
-        </button>
+      {mode === null ? (
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-zinc-400 dark:text-zinc-500">Conhece um link?</span>
+          <button
+            onClick={() => setMode('compra')}
+            className="flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs font-semibold text-zinc-600 transition hover:border-orange-500 hover:bg-orange-500/5 hover:text-orange-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:border-orange-500/50 dark:hover:text-orange-400"
+          >
+            <ShoppingCart className="h-3.5 w-3.5" />
+            Sugerir compra
+          </button>
+          <button
+            onClick={() => setMode('video')}
+            className="flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs font-semibold text-zinc-600 transition hover:border-orange-500 hover:bg-orange-500/5 hover:text-orange-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:border-orange-500/50 dark:hover:text-orange-400"
+          >
+            <Video className="h-3.5 w-3.5" />
+            Sugerir vídeo
+          </button>
+        </div>
       ) : (
         <div className="rounded-xl border border-orange-500/20 bg-orange-500/5 p-4 dark:bg-orange-500/5">
           <div className="mb-3 flex items-center justify-between">
-            <p className="text-xs font-semibold text-orange-600 dark:text-orange-400">
-              Sugerir link para: <span className="text-zinc-700 dark:text-zinc-300">{compatiblePartName}</span>
+            <p className="flex items-center gap-1.5 text-xs font-semibold text-orange-600 dark:text-orange-400">
+              {mode === 'compra'
+                ? <ShoppingCart className="h-3.5 w-3.5" />
+                : <Video className="h-3.5 w-3.5" />}
+              {mode === 'compra' ? 'Sugerir link de compra' : 'Sugerir vídeo'} —{' '}
+              <span className="font-normal text-zinc-600 dark:text-zinc-400">{compatiblePartName}</span>
             </p>
-            <button onClick={() => setOpen(false)} className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300">
+            <button onClick={handleClose} className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300">
               <X className="h-4 w-4" />
             </button>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-3">
-            <div>
-              <label className={labelClass}>Link de compra</label>
-              <input
-                type="url"
-                value={form.purchaseLink}
-                onChange={e => setForm(f => ({ ...f, purchaseLink: e.target.value }))}
-                placeholder="https://www.mercadolivre.com.br/..."
-                className={inputClass}
-              />
-            </div>
+            {mode === 'compra' && (
+              <div>
+                <label className={labelClass}>Link de compra</label>
+                <input
+                  type="url"
+                  value={form.purchaseLink}
+                  onChange={e => setForm(f => ({ ...f, purchaseLink: e.target.value }))}
+                  placeholder="https://www.mercadolivre.com.br/..."
+                  className={inputClass}
+                  autoFocus
+                />
+              </div>
+            )}
 
-            <div>
-              <label className={labelClass}>Link(s) de vídeo</label>
-              <textarea
-                value={form.videoLinks}
-                onChange={e => setForm(f => ({ ...f, videoLinks: e.target.value }))}
-                rows={2}
-                placeholder={'Cole os links (um por linha)\nhttps://youtube.com/...\nhttps://instagram.com/...'}
-                className={inputClass}
-              />
-            </div>
+            {mode === 'video' && (
+              <div>
+                <label className={labelClass}>Link(s) de vídeo</label>
+                <textarea
+                  value={form.videoLinks}
+                  onChange={e => setForm(f => ({ ...f, videoLinks: e.target.value }))}
+                  rows={2}
+                  placeholder={'Cole os links (um por linha)\nhttps://youtube.com/...\nhttps://instagram.com/...'}
+                  className={inputClass}
+                  autoFocus
+                />
+              </div>
+            )}
 
             <div>
               <label className={labelClass}>Observação (opcional)</label>

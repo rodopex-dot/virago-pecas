@@ -308,9 +308,9 @@ export default function PartDetailPage({ params }: { params: Promise<{ id: strin
                     {cp.price && <p className="mt-1 text-sm font-bold text-green-400">
                       {cp.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                     </p>}
-                    {!cp.imageUrl && (
+                    {!cp.imageUrl && cp.purchaseLinks.length > 0 && (
                       <button
-                        onClick={() => doFetchImage(cp.purchaseLink)}
+                        onClick={() => doFetchImage(cp.purchaseLinks[0].url)}
                         className="mt-2 flex items-center gap-1 text-xs text-zinc-500 hover:text-orange-400"
                       >
                         <RefreshCw className="h-3 w-3" /> Buscar imagem
@@ -386,8 +386,8 @@ export default function PartDetailPage({ params }: { params: Promise<{ id: strin
                   </label>
                   <button
                     type="button"
-                    onClick={() => doFetchImage(form.purchaseLink)}
-                    disabled={fetchingImage || !form.purchaseLink}
+                    onClick={() => doFetchImage(linkInput)}
+                    disabled={fetchingImage || !linkInput}
                     className="flex items-center gap-1 text-xs text-zinc-500 hover:text-orange-400 disabled:opacity-40"
                   >
                     {fetchingImage

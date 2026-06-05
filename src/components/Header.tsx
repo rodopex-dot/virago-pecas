@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { Wrench, PlusCircle, Menu, X } from 'lucide-react'
 import { useState } from 'react'
+import { usePathname } from 'next/navigation'
 import ThemeToggle from './ThemeToggle'
 
 const NAV_LINKS = [
@@ -12,7 +13,10 @@ const NAV_LINKS = [
 ]
 
 export default function Header() {
+  const pathname = usePathname()
   const [menuOpen, setMenuOpen] = useState(false)
+
+  if (pathname.startsWith('/admin')) return null
 
   return (
     <header className="sticky top-0 z-50 border-b border-zinc-200 bg-white/90 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-950/90">

@@ -43,6 +43,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
   },
   Cabos: {
     icon: Cable,
+    image: '/categories/cabos.jpg',
     gradient: 'from-green-600/20 to-green-900/10',
     glow: 'group-hover:shadow-[0_0_20px_rgba(34,197,94,0.3)]',
     description: 'Acelerador, embreagem, freio',
@@ -56,6 +57,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
   },
   Elétrica: {
     icon: Radio,
+    image: '/categories/eletrica.jpg',
     gradient: 'from-cyan-600/20 to-cyan-900/10',
     glow: 'group-hover:shadow-[0_0_20px_rgba(6,182,212,0.3)]',
     description: 'Regulador, bobina, chicote',
@@ -69,6 +71,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
   },
   Carburação: {
     icon: Gauge,
+    image: '/categories/carburador.jpg',
     gradient: 'from-amber-600/20 to-amber-900/10',
     glow: 'group-hover:shadow-[0_0_20px_rgba(245,158,11,0.3)]',
     description: 'Carburador, filtro, bico',

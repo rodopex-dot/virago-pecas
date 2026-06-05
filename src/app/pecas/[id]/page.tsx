@@ -149,41 +149,39 @@ export default async function PartPage({ params }: { params: Promise<{ id: strin
                           </div>
 
                           {/* Badge + botões de compra por plataforma */}
-                          <div className="flex w-fit shrink-0 flex-col gap-2">
-                            <CompatibilityBadge level={cp.compatibilityLevel} className="w-full" />
-                            {cp.purchaseLinks.map(pl => {
-                              const style = PLATFORM_BUTTON[pl.platform] ?? PLATFORM_BUTTON.other
-                              const href = convertToAffiliateLink(pl.url, affiliateConfigs)
-                              return (
-                                <a
-                                  key={pl.id}
-                                  href={href}
-                                  target="_blank"
-                                  rel="noopener noreferrer sponsored"
-                                  className={`flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition ${style.bg} ${style.text} ${style.hover}`}
-                                >
-                                  <ShoppingCart className="h-5 w-5" />
-                                  <div>
-                                    <p className="text-sm font-semibold leading-none">{style.label}</p>
-                                    <p className="text-xs opacity-70 leading-none mt-0.5">Ver oferta</p>
-                                  </div>
-                                </a>
-                              )
-                            })}
-                            {/* Fallback para o campo legado */}
-                            {cp.purchaseLinks.length === 0 && cp.purchaseLink && (
-                              <a
-                                href={convertToAffiliateLink(cp.purchaseLink, affiliateConfigs)}
-                                target="_blank"
-                                rel="noopener noreferrer sponsored"
-                                className="flex w-full items-center justify-center gap-2 rounded-lg bg-orange-500 px-3 py-2 text-sm font-semibold text-white transition hover:bg-orange-600"
-                              >
-                                <ShoppingCart className="h-5 w-5" />
-                                <div>
-                                  <p className="text-sm font-semibold leading-none">Comprar</p>
-                                  <p className="text-xs opacity-70 leading-none mt-0.5">Ver oferta</p>
-                                </div>
-                              </a>
+                          <div className="flex shrink-0 flex-col items-end gap-2">
+                            <CompatibilityBadge level={cp.compatibilityLevel} />
+                            {(cp.purchaseLinks.length > 0 || cp.purchaseLink) && (
+                              <div className="flex flex-wrap justify-end gap-1.5">
+                                {cp.purchaseLinks.map(pl => {
+                                  const btn = PLATFORM_BUTTON[pl.platform] ?? PLATFORM_BUTTON.other
+                                  const href = convertToAffiliateLink(pl.url, affiliateConfigs)
+                                  return (
+                                    <a
+                                      key={pl.id}
+                                      href={href}
+                                      target="_blank"
+                                      rel="noopener noreferrer sponsored"
+                                      className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-bold transition ${btn.bg} ${btn.text} ${btn.hover}`}
+                                    >
+                                      <ShoppingCart className="h-3.5 w-3.5" />
+                                      {btn.label}
+                                    </a>
+                                  )
+                                })}
+                                {/* Fallback para o campo legado */}
+                                {cp.purchaseLinks.length === 0 && cp.purchaseLink && (
+                                  <a
+                                    href={convertToAffiliateLink(cp.purchaseLink, affiliateConfigs)}
+                                    target="_blank"
+                                    rel="noopener noreferrer sponsored"
+                                    className="flex items-center gap-1.5 rounded-lg bg-orange-500 px-2.5 py-1.5 text-xs font-bold text-white transition hover:bg-orange-600"
+                                  >
+                                    <ShoppingCart className="h-3.5 w-3.5" />
+                                    Comprar
+                                  </a>
+                                )}
+                              </div>
                             )}
                           </div>
                         </div>

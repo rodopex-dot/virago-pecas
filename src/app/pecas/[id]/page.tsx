@@ -155,11 +155,14 @@ export default async function PartPage({ params }: { params: Promise<{ id: strin
                                 href={convertToAffiliateLink(cp.purchaseLink, affiliateConfigs)}
                                 target="_blank"
                                 rel="noopener noreferrer sponsored"
-                                className="flex items-center gap-2 rounded-xl bg-orange-500 px-4 py-2 text-sm font-bold text-white transition hover:bg-orange-600"
+                                className="inline-flex items-center gap-2 rounded-lg bg-orange-500 px-3 py-2 text-sm font-semibold text-white transition hover:bg-orange-600"
                               >
-                                <ShoppingCart className="h-4 w-4" />
-                                Comprar
-                                <ExternalLink className="h-3 w-3 opacity-70" />
+                                <ShoppingCart className="h-5 w-5" />
+                                <div>
+                                  <p className="text-sm font-semibold leading-none">Comprar</p>
+                                  <p className="text-xs opacity-70 leading-none mt-0.5">Ver oferta</p>
+                                </div>
+                                <ExternalLink className="h-3.5 w-3.5 opacity-70" />
                               </a>
                             )}
                           </div>

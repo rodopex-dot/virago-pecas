@@ -51,6 +51,7 @@ model CompatiblePart {
 
   videos          VideoReference[]
   linkSuggestions LinkSuggestion[]
+  comments        Comment[]
 
   @@map("compatible_parts")
 }
@@ -123,6 +124,20 @@ model Category {
   updatedAt   DateTime @updatedAt
 
   @@map("categories")
+}
+
+model Comment {
+  id               String         @id @default(cuid())
+  compatiblePartId String
+  compatiblePart   CompatiblePart @relation(fields: [compatiblePartId], references: [id], onDelete: Cascade)
+  authorName       String
+  authorEmail      String
+  content          String         @db.Text
+  likes            Int            @default(0)
+  approved         Boolean        @default(false)
+  createdAt        DateTime       @default(now())
+
+  @@map("comments")
 }
 
 model Manual {

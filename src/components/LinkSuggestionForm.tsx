@@ -1,25 +1,23 @@
 'use client'
 
 import { useState } from 'react'
-import { Link2, Video, X, Loader2, CheckCircle, ShoppingCart } from 'lucide-react'
+import { Link2, X, Loader2, CheckCircle, ShoppingCart } from 'lucide-react'
 
 interface Props {
   compatiblePartId: string
   compatiblePartName: string
 }
 
-type Mode = null | 'compra' | 'video'
-
 export default function LinkSuggestionForm({ compatiblePartId, compatiblePartName }: Props) {
-  const [mode, setMode] = useState<Mode>(null)
-  const [form, setForm] = useState({ purchaseLink: '', videoLinks: '', submitterEmail: '', notes: '' })
+  const [mode, setMode] = useState<boolean>(false)
+  const [form, setForm] = useState({ purchaseLink: '', submitterEmail: '', notes: '' })
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [error, setError] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!form.purchaseLink.trim() && !form.videoLinks.trim()) {
-      setError('Informe ao menos um link.')
+    if (!form.purchaseLink.trim()) {
+      setError('Informe o link de compra.')
       return
     }
     setStatus('loading')
@@ -42,8 +40,8 @@ export default function LinkSuggestionForm({ compatiblePartId, compatiblePartNam
   }
 
   const handleClose = () => {
-    setMode(null)
-    setForm({ purchaseLink: '', videoLinks: '', submitterEmail: '', notes: '' })
+    setMode(false)
+    setForm({ purchaseLink: '', submitterEmail: '', notes: '' })
     setStatus('idle')
     setError('')
   }
@@ -63,32 +61,23 @@ export default function LinkSuggestionForm({ compatiblePartId, compatiblePartNam
 
   return (
     <div className="mt-3 border-t border-zinc-100 pt-3 dark:border-zinc-800">
-      {mode === null ? (
+      {!mode ? (
         <div className="flex items-center gap-2">
           <span className="text-xs text-zinc-400 dark:text-zinc-500">Conhece um link?</span>
           <button
-            onClick={() => setMode('compra')}
+            onClick={() => setMode(true)}
             className="flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs font-semibold text-zinc-600 transition hover:border-orange-500 hover:bg-orange-500/5 hover:text-orange-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:border-orange-500/50 dark:hover:text-orange-400"
           >
             <ShoppingCart className="h-3.5 w-3.5" />
             Sugerir compra
-          </button>
-          <button
-            onClick={() => setMode('video')}
-            className="flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs font-semibold text-zinc-600 transition hover:border-orange-500 hover:bg-orange-500/5 hover:text-orange-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:border-orange-500/50 dark:hover:text-orange-400"
-          >
-            <Video className="h-3.5 w-3.5" />
-            Sugerir vídeo
           </button>
         </div>
       ) : (
         <div className="rounded-xl border border-orange-500/20 bg-orange-500/5 p-4 dark:bg-orange-500/5">
           <div className="mb-3 flex items-center justify-between">
             <p className="flex items-center gap-1.5 text-xs font-semibold text-orange-600 dark:text-orange-400">
-              {mode === 'compra'
-                ? <ShoppingCart className="h-3.5 w-3.5" />
-                : <Video className="h-3.5 w-3.5" />}
-              {mode === 'compra' ? 'Sugerir link de compra' : 'Sugerir vídeo'} —{' '}
+              <ShoppingCart className="h-3.5 w-3.5" />
+              Sugerir link de compra —{' '}
               <span className="font-normal text-zinc-600 dark:text-zinc-400">{compatiblePartName}</span>
             </p>
             <button onClick={handleClose} className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300">
@@ -97,8 +86,7 @@ export default function LinkSuggestionForm({ compatiblePartId, compatiblePartNam
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-3">
-            {mode === 'compra' && (
-              <div>
+            <div>
                 <label className={labelClass}>Link de compra</label>
                 <input
                   type="url"
@@ -109,21 +97,6 @@ export default function LinkSuggestionForm({ compatiblePartId, compatiblePartNam
                   autoFocus
                 />
               </div>
-            )}
-
-            {mode === 'video' && (
-              <div>
-                <label className={labelClass}>Link(s) de vídeo</label>
-                <textarea
-                  value={form.videoLinks}
-                  onChange={e => setForm(f => ({ ...f, videoLinks: e.target.value }))}
-                  rows={2}
-                  placeholder={'Cole os links (um por linha)\nhttps://youtube.com/...\nhttps://instagram.com/...'}
-                  className={inputClass}
-                  autoFocus
-                />
-              </div>
-            )}
 
             <div>
               <label className={labelClass}>Observação (opcional)</label>

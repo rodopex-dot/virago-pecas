@@ -7,6 +7,7 @@ import AdBanner from '@/components/AdBanner'
 import { categoryConfig } from '@/components/CategoryCard'
 import { convertToAffiliateLink } from '@/lib/affiliateLinks'
 import LinkSuggestionForm from '@/components/LinkSuggestionForm'
+import CommentsSection from '@/components/CommentsSection'
 import { ArrowLeft, ExternalLink, ShoppingCart } from 'lucide-react'
 
 async function getPart(id: string) {
@@ -14,7 +15,10 @@ async function getPart(id: string) {
     where: { id },
     include: {
       compatibleParts: {
-        include: { videos: true },
+        include: {
+          videos: true,
+          _count: { select: { comments: { where: { approved: true } } } },
+        },
         orderBy: { compatibilityLevel: 'asc' },
       },
     },
@@ -165,6 +169,10 @@ export default async function PartPage({ params }: { params: Promise<{ id: strin
                         <LinkSuggestionForm
                           compatiblePartId={cp.id}
                           compatiblePartName={cp.name}
+                        />
+                        <CommentsSection
+                          compatiblePartId={cp.id}
+                          initialCount={cp._count.comments}
                         />
 
                         {cp.purchaseLink && (

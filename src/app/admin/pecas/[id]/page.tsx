@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, use, useCallback } from 'react'
+import { useEffect, useRef, useState, use, useCallback } from 'react'
 import Link from 'next/link'
 import {
   ArrowLeft, Plus, Pencil, Trash2, Loader2,
@@ -66,12 +66,21 @@ export default function PartDetailPage({ params }: { params: Promise<{ id: strin
     setShowForm(true)
   }
 
-  // Auto-busca imagem+preço ao sair do campo de link (só se algum campo estiver vazio)
-  const handleUrlBlur = async () => {
-    if (!form.purchaseLink.startsWith('http')) return
+  // Auto-busca imagem+preço ao digitar/colar link (debounce 700ms)
+  const fetchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => {
+    const url = form.purchaseLink
+    if (!url.startsWith('http')) return
     if (form.imageUrl && form.price) return // já tem tudo, não rebusca
-    await doFetchImage(form.purchaseLink)
-  }
+    if (fetchDebounceRef.current) clearTimeout(fetchDebounceRef.current)
+    fetchDebounceRef.current = setTimeout(() => {
+      doFetchImage(url)
+    }, 700)
+    return () => {
+      if (fetchDebounceRef.current) clearTimeout(fetchDebounceRef.current)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.purchaseLink])
 
   const doFetchImage = async (url: string) => {
     if (!url.startsWith('http')) return
@@ -288,7 +297,6 @@ export default function PartDetailPage({ params }: { params: Promise<{ id: strin
                   <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-zinc-500">Link de Compra</label>
                   <input type="url" value={form.purchaseLink}
                     onChange={e => setForm(f => ({ ...f, purchaseLink: e.target.value }))}
-                    onBlur={handleUrlBlur}
                     placeholder="https://... (opcional)" className={inputClass} />
                 </div>
               </div>

@@ -29,9 +29,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className="flex min-h-screen bg-zinc-950">
+    <div className="flex h-screen overflow-hidden bg-zinc-950">
       {/* Sidebar */}
-      <aside className="flex w-60 shrink-0 flex-col border-r border-zinc-800 bg-zinc-900">
+      <aside className="flex w-60 shrink-0 flex-col overflow-y-auto border-r border-zinc-800 bg-zinc-900">
         {/* Logo */}
         <div className="flex h-16 items-center gap-3 border-b border-zinc-800 px-5">
           <div className="rounded-lg bg-orange-500/10 p-1.5">
@@ -87,7 +87,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </aside>
 
       {/* Main */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 min-h-0 overflow-auto">
         {children}
       </div>
     </div>

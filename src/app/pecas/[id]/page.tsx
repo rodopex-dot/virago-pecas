@@ -146,7 +146,23 @@ export default async function PartPage({ params }: { params: Promise<{ id: strin
                               )}
                             </div>
                           </div>
-                          <CompatibilityBadge level={cp.compatibilityLevel} />
+
+                          {/* Badge + botão Comprar sempre visíveis no topo direito */}
+                          <div className="flex shrink-0 flex-col items-end gap-2">
+                            <CompatibilityBadge level={cp.compatibilityLevel} />
+                            {cp.purchaseLink && (
+                              <a
+                                href={convertToAffiliateLink(cp.purchaseLink, affiliateConfigs)}
+                                target="_blank"
+                                rel="noopener noreferrer sponsored"
+                                className="flex items-center gap-2 rounded-xl bg-orange-500 px-4 py-2 text-sm font-bold text-white transition hover:bg-orange-600"
+                              >
+                                <ShoppingCart className="h-4 w-4" />
+                                Comprar
+                                <ExternalLink className="h-3 w-3 opacity-70" />
+                              </a>
+                            )}
+                          </div>
                         </div>
 
                         {cp.notes && (
@@ -175,21 +191,6 @@ export default async function PartPage({ params }: { params: Promise<{ id: strin
                           initialCount={cp._count.comments}
                         />
 
-                        {cp.purchaseLink && (
-                          <div className="mt-4 flex items-center justify-between border-t border-zinc-100 pt-4 dark:border-zinc-800">
-                            <span className="text-xs text-zinc-500">Link verificado pela comunidade</span>
-                            <a
-                              href={convertToAffiliateLink(cp.purchaseLink, affiliateConfigs)}
-                              target="_blank"
-                              rel="noopener noreferrer sponsored"
-                              className="flex items-center gap-2 rounded-xl bg-orange-500 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-orange-600"
-                            >
-                              <ShoppingCart className="h-4 w-4" />
-                              Comprar
-                              <ExternalLink className="h-3 w-3 opacity-70" />
-                            </a>
-                          </div>
-                        )}
                       </div>
                     </div>
                   </div>

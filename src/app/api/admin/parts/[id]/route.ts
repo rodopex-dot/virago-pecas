@@ -6,7 +6,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   try {
     const part = await prisma.part.findUnique({
       where: { id },
-      include: { compatibleParts: { include: { videos: true }, orderBy: { compatibilityLevel: 'asc' } } },
+      include: { compatibleParts: { include: { videos: true, purchaseLinks: { orderBy: { createdAt: 'asc' } } }, orderBy: { compatibilityLevel: 'asc' } } },
     })
     if (!part) return NextResponse.json({ error: 'Peça não encontrada.' }, { status: 404 })
     return NextResponse.json(part)

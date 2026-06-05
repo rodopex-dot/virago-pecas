@@ -52,8 +52,20 @@ model CompatiblePart {
   videos          VideoReference[]
   linkSuggestions LinkSuggestion[]
   comments        Comment[]
+  purchaseLinks   PurchaseLink[]
 
   @@map("compatible_parts")
+}
+
+model PurchaseLink {
+  id               String         @id @default(cuid())
+  compatiblePartId String
+  compatiblePart   CompatiblePart @relation(fields: [compatiblePartId], references: [id], onDelete: Cascade)
+  url              String
+  platform         String         @default("other")
+  createdAt        DateTime       @default(now())
+
+  @@map("purchase_links")
 }
 
 model VideoReference {

@@ -5,7 +5,7 @@ import CompatibilityBadge from '@/components/CompatibilityBadge'
 import VideoEmbed from '@/components/VideoEmbed'
 import AdBanner from '@/components/AdBanner'
 import { categoryConfig } from '@/components/CategoryCard'
-import { convertToAffiliateLink } from '@/lib/affiliateLinks'
+import { convertToAffiliateLink, PLATFORM_BUTTON } from '@/lib/affiliateLinks'
 import LinkSuggestionForm from '@/components/LinkSuggestionForm'
 import CommentsSection from '@/components/CommentsSection'
 import { ArrowLeft, ExternalLink, ShoppingCart } from 'lucide-react'
@@ -17,6 +17,7 @@ async function getPart(id: string) {
       compatibleParts: {
         include: {
           videos: true,
+          purchaseLinks: { orderBy: { createdAt: 'asc' } },
           _count: { select: { comments: { where: { approved: true } } } },
         },
         orderBy: { compatibilityLevel: 'asc' },
@@ -147,10 +148,30 @@ export default async function PartPage({ params }: { params: Promise<{ id: strin
                             </div>
                           </div>
 
-                          {/* Badge + botão Comprar — mesma largura */}
+                          {/* Badge + botões de compra por plataforma */}
                           <div className="flex w-fit shrink-0 flex-col gap-2">
                             <CompatibilityBadge level={cp.compatibilityLevel} className="w-full" />
-                            {cp.purchaseLink && (
+                            {cp.purchaseLinks.map(pl => {
+                              const style = PLATFORM_BUTTON[pl.platform] ?? PLATFORM_BUTTON.other
+                              const href = convertToAffiliateLink(pl.url, affiliateConfigs)
+                              return (
+                                <a
+                                  key={pl.id}
+                                  href={href}
+                                  target="_blank"
+                                  rel="noopener noreferrer sponsored"
+                                  className={`flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition ${style.bg} ${style.text} ${style.hover}`}
+                                >
+                                  <ShoppingCart className="h-5 w-5" />
+                                  <div>
+                                    <p className="text-sm font-semibold leading-none">{style.label}</p>
+                                    <p className="text-xs opacity-70 leading-none mt-0.5">Ver oferta</p>
+                                  </div>
+                                </a>
+                              )
+                            })}
+                            {/* Fallback para o campo legado */}
+                            {cp.purchaseLinks.length === 0 && cp.purchaseLink && (
                               <a
                                 href={convertToAffiliateLink(cp.purchaseLink, affiliateConfigs)}
                                 target="_blank"

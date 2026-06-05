@@ -5,14 +5,26 @@ import Link from 'next/link'
 import {
   ArrowLeft, Plus, Pencil, Trash2, Loader2,
   CheckCircle, AlertTriangle, AlertOctagon,
-  Image as ImageIcon, RefreshCw, X, Images,
+  Image as ImageIcon, RefreshCw, X, Images, ShoppingCart,
 } from 'lucide-react'
+import { PLATFORM_BUTTON, detectPlatform } from '@/lib/affiliateLinks'
+
+// Detecta plataforma no cliente (mesma lógica do server)
+function detectPlatformClient(url: string): string {
+  return detectPlatform(url) ?? 'other'
+}
+
+const PLATFORM_LABELS: Record<string, string> = Object.fromEntries(
+  Object.entries(PLATFORM_BUTTON).map(([k, v]) => [k, v.label])
+)
 
 interface Video { id: string; url: string; platform: string; title?: string }
+interface PurchaseLink { id: string; url: string; platform: string }
 interface CompatiblePart {
   id: string; name: string; brand?: string; partNumber?: string
-  price?: number; purchaseLink: string; imageUrl?: string
-  compatibilityLevel: string; adaptationText?: string; notes?: string; videos: Video[]
+  price?: number; purchaseLink?: string; imageUrl?: string
+  compatibilityLevel: string; adaptationText?: string; notes?: string
+  videos: Video[]; purchaseLinks: PurchaseLink[]
 }
 interface Part {
   id: string; name: string; category: string; description?: string
@@ -27,7 +39,7 @@ const levelLabel: Record<string, { label: string; icon: typeof CheckCircle; colo
 }
 const inputClass = 'w-full rounded-xl border border-zinc-700 bg-zinc-800 px-4 py-2.5 text-sm text-white placeholder-zinc-600 outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20'
 const emptyForm = {
-  name: '', brand: '', partNumber: '', price: '', purchaseLink: '',
+  name: '', brand: '', partNumber: '', price: '',
   compatibilityLevel: 'ENCAIXE_PERFEITO', adaptationText: '', notes: '', videoLinks: '', imageUrl: '',
 }
 
@@ -44,6 +56,11 @@ export default function PartDetailPage({ params }: { params: Promise<{ id: strin
   const [imageError, setImageError] = useState('')
   const [batchLoading, setBatchLoading] = useState(false)
   const [batchResult, setBatchResult] = useState<{ updated: number; failed: number; total: number } | null>(null)
+  // Gerenciamento de links de compra
+  const [linkInput, setLinkInput] = useState('')
+  const [addingLink, setAddingLink] = useState(false)
+  const [deletingLinkId, setDeletingLinkId] = useState<string | null>(null)
+  const [editCpLinks, setEditCpLinks] = useState<PurchaseLink[]>([])
 
   const load = useCallback(() => {
     fetch(`/api/admin/parts/${id}`).then(r => r.json()).then(setPart).finally(() => setLoading(false))
@@ -51,27 +68,33 @@ export default function PartDetailPage({ params }: { params: Promise<{ id: strin
 
   useEffect(() => { load() }, [load])
 
-  const openCreate = () => { setEditCp(null); setForm(emptyForm); setImageError(''); setShowForm(true) }
+  const openCreate = () => {
+    setEditCp(null); setForm(emptyForm); setImageError('')
+    setLinkInput(''); setEditCpLinks([])
+    setShowForm(true)
+  }
   const openEdit = (cp: CompatiblePart) => {
     setEditCp(cp)
     setForm({
       name: cp.name, brand: cp.brand ?? '', partNumber: cp.partNumber ?? '',
-      price: cp.price?.toString() ?? '', purchaseLink: cp.purchaseLink,
+      price: cp.price?.toString() ?? '',
       compatibilityLevel: cp.compatibilityLevel,
       adaptationText: cp.adaptationText ?? '', notes: cp.notes ?? '',
       videoLinks: cp.videos.map(v => v.url).join('\n'),
       imageUrl: cp.imageUrl ?? '',
     })
+    setEditCpLinks(cp.purchaseLinks ?? [])
+    setLinkInput('')
     setImageError('')
     setShowForm(true)
   }
 
-  // Auto-busca imagem+preço ao digitar/colar link (debounce 700ms)
+  // Auto-busca imagem+preço ao colar link no input de links (debounce 700ms)
   const fetchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   useEffect(() => {
-    const url = form.purchaseLink
+    const url = linkInput
     if (!url.startsWith('http')) return
-    if (form.imageUrl && form.price) return // já tem tudo, não rebusca
+    if (form.imageUrl && form.price) return
     if (fetchDebounceRef.current) clearTimeout(fetchDebounceRef.current)
     fetchDebounceRef.current = setTimeout(() => {
       doFetchImage(url)
@@ -80,7 +103,50 @@ export default function PartDetailPage({ params }: { params: Promise<{ id: strin
       if (fetchDebounceRef.current) clearTimeout(fetchDebounceRef.current)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [form.purchaseLink])
+  }, [linkInput])
+
+  // Adicionar link de compra
+  const handleAddLink = async () => {
+    const url = linkInput.trim()
+    if (!url.startsWith('http')) return
+    setAddingLink(true)
+    try {
+      if (editCp) {
+        // Edição: salva imediatamente no banco
+        const res = await fetch(`/api/admin/parts/${id}/compatible/${editCp.id}/purchase-links`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url }),
+        })
+        if (res.ok) {
+          const link = await res.json()
+          setEditCpLinks(prev => [...prev, link])
+          setLinkInput('')
+        }
+      } else {
+        // Criação: acumula localmente (salvo após o form)
+        const platform = detectPlatformClient(url)
+        setEditCpLinks(prev => [...prev, { id: `temp-${Date.now()}`, url, platform }])
+        setLinkInput('')
+      }
+    } finally {
+      setAddingLink(false)
+    }
+  }
+
+  const handleDeleteLink = async (linkId: string) => {
+    if (linkId.startsWith('temp-')) {
+      setEditCpLinks(prev => prev.filter(l => l.id !== linkId))
+      return
+    }
+    setDeletingLinkId(linkId)
+    try {
+      await fetch(`/api/admin/purchase-links/${linkId}`, { method: 'DELETE' })
+      setEditCpLinks(prev => prev.filter(l => l.id !== linkId))
+    } finally {
+      setDeletingLinkId(null)
+    }
+  }
 
   const doFetchImage = async (url: string) => {
     if (!url.startsWith('http')) return
@@ -99,6 +165,7 @@ export default function PartDetailPage({ params }: { params: Promise<{ id: strin
           imageUrl: data.imageUrl ?? f.imageUrl,
           price: data.price != null && !f.price ? String(data.price) : f.price,
         }))
+        setImageError('')
       } else {
         setImageError(data.error ?? 'Dados não encontrados.')
       }
@@ -110,11 +177,27 @@ export default function PartDetailPage({ params }: { params: Promise<{ id: strin
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault(); setSaving(true)
     try {
-      const url = editCp
+      const apiUrl = editCp
         ? `/api/admin/parts/${id}/compatible/${editCp.id}`
         : `/api/admin/parts/${id}/compatible`
       const method = editCp ? 'PUT' : 'POST'
-      await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
+      const res = await fetch(apiUrl, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      })
+      // Para nova peça: criar os links pendentes
+      if (!editCp && res.ok) {
+        const created = await res.json()
+        const tempLinks = editCpLinks.filter(l => l.id.startsWith('temp-'))
+        await Promise.all(tempLinks.map(l =>
+          fetch(`/api/admin/parts/${id}/compatible/${created.id}/purchase-links`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: l.url }),
+          })
+        ))
+      }
       setShowForm(false); load()
     } finally { setSaving(false) }
   }
@@ -281,8 +364,8 @@ export default function PartDetailPage({ params }: { params: Promise<{ id: strin
                     <label className="text-xs font-bold uppercase tracking-widest text-zinc-500">Preço (R$)</label>
                     <button
                       type="button"
-                      onClick={() => doFetchImage(form.purchaseLink)}
-                      disabled={fetchingImage || !form.purchaseLink}
+                      onClick={() => doFetchImage(linkInput)}
+                      disabled={fetchingImage || !linkInput}
                       className="flex items-center gap-1 text-xs text-zinc-500 hover:text-orange-400 disabled:opacity-40"
                     >
                       {fetchingImage ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
@@ -292,12 +375,6 @@ export default function PartDetailPage({ params }: { params: Promise<{ id: strin
                   <input type="number" step="0.01" value={form.price}
                     onChange={e => setForm(f => ({ ...f, price: e.target.value }))}
                     placeholder="0.00" className={inputClass} />
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-zinc-500">Link de Compra</label>
-                  <input type="url" value={form.purchaseLink}
-                    onChange={e => setForm(f => ({ ...f, purchaseLink: e.target.value }))}
-                    placeholder="https://... (opcional)" className={inputClass} />
                 </div>
               </div>
 
@@ -373,6 +450,69 @@ export default function PartDetailPage({ params }: { params: Promise<{ id: strin
                   onChange={e => setForm(f => ({ ...f, videoLinks: e.target.value }))}
                   placeholder={"https://youtube.com/...\nhttps://instagram.com/..."} className={inputClass} />
               </div>
+              {/* Links de compra */}
+              <div className="rounded-xl border border-zinc-700 bg-zinc-800/50 p-4">
+                <label className="mb-3 block text-xs font-bold uppercase tracking-widest text-zinc-500">
+                  Links de Compra
+                </label>
+
+                {/* Lista de links */}
+                {editCpLinks.length > 0 && (
+                  <div className="mb-3 space-y-2">
+                    {editCpLinks.map(pl => {
+                      const style = PLATFORM_BUTTON[pl.platform] ?? PLATFORM_BUTTON.other
+                      return (
+                        <div key={pl.id} className="flex items-center gap-2">
+                          <span className={`shrink-0 rounded-lg px-2.5 py-1 text-xs font-bold ${style.bg} ${style.text}`}>
+                            {style.label}
+                          </span>
+                          <span className="flex-1 truncate text-xs text-zinc-400">{pl.url}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteLink(pl.id)}
+                            disabled={deletingLinkId === pl.id}
+                            className="shrink-0 rounded p-1 text-zinc-600 hover:text-red-400"
+                          >
+                            {deletingLinkId === pl.id
+                              ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              : <X className="h-3.5 w-3.5" />}
+                          </button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+
+                {/* Adicionar link */}
+                <div className="flex gap-2">
+                  <input
+                    type="url"
+                    value={linkInput}
+                    onChange={e => setLinkInput(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), handleAddLink())}
+                    placeholder="Cole o link (Amazon, ML, Shopee, AliExpress...)"
+                    className="flex-1 rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-2 text-xs text-white placeholder-zinc-600 outline-none focus:border-orange-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddLink}
+                    disabled={addingLink || !linkInput.startsWith('http')}
+                    className="flex shrink-0 items-center gap-1 rounded-lg bg-orange-500 px-3 py-2 text-xs font-bold text-white hover:bg-orange-600 disabled:opacity-40"
+                  >
+                    {addingLink ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
+                    Adicionar
+                  </button>
+                </div>
+                {linkInput.startsWith('http') && (
+                  <p className="mt-1.5 text-[11px] text-zinc-500">
+                    Plataforma detectada:{' '}
+                    <span className="font-semibold text-zinc-300">
+                      {PLATFORM_LABELS[detectPlatformClient(linkInput)] ?? 'Outro'}
+                    </span>
+                  </p>
+                )}
+              </div>
+
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setShowForm(false)}
                   className="flex-1 rounded-xl border border-zinc-700 py-2.5 text-sm font-semibold text-zinc-400 hover:border-zinc-500">

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { detectPlatform } from '@/lib/affiliateLinks'
 
 export async function PUT(
   request: NextRequest,
@@ -21,12 +22,19 @@ export async function PUT(
     }
 
     if (action === 'approve') {
-      // Aplica link de compra se fornecido
+      // Cria novo PurchaseLink (não substitui — adiciona ao conjunto)
       if (suggestion.purchaseLink) {
-        await prisma.compatiblePart.update({
-          where: { id: suggestion.compatiblePartId },
-          data: { purchaseLink: suggestion.purchaseLink },
+        const url = suggestion.purchaseLink.trim()
+        const platform = detectPlatform(url) ?? 'other'
+        // Evita duplicata exata
+        const exists = await prisma.purchaseLink.findFirst({
+          where: { compatiblePartId: suggestion.compatiblePartId, url },
         })
+        if (!exists) {
+          await prisma.purchaseLink.create({
+            data: { compatiblePartId: suggestion.compatiblePartId, url, platform },
+          })
+        }
       }
 
       // Aplica links de vídeo se fornecidos

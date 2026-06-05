@@ -151,6 +151,22 @@ export function convertToAffiliateLink(
   return url
 }
 
+/** Estilos visuais dos botões de compra por plataforma */
+export const PLATFORM_BUTTON: Record<string, {
+  label: string
+  bg: string        // Tailwind bg class
+  text: string      // Tailwind text class
+  hover: string     // Tailwind hover class
+  border: string    // Tailwind border class
+}> = {
+  amazon:       { label: 'Amazon',        bg: 'bg-amber-400',   text: 'text-zinc-900', hover: 'hover:bg-amber-500',   border: 'border-amber-500' },
+  mercadolivre: { label: 'Mercado Livre', bg: 'bg-yellow-400',  text: 'text-zinc-900', hover: 'hover:bg-yellow-500',  border: 'border-yellow-500' },
+  shopee:       { label: 'Shopee',        bg: 'bg-orange-500',  text: 'text-white',    hover: 'hover:bg-orange-600',  border: 'border-orange-600' },
+  aliexpress:   { label: 'AliExpress',    bg: 'bg-red-500',     text: 'text-white',    hover: 'hover:bg-red-600',     border: 'border-red-600' },
+  magalu:       { label: 'Magalu',        bg: 'bg-blue-500',    text: 'text-white',    hover: 'hover:bg-blue-600',    border: 'border-blue-600' },
+  other:        { label: 'Ver oferta',    bg: 'bg-zinc-600',    text: 'text-white',    hover: 'hover:bg-zinc-700',    border: 'border-zinc-700' },
+}
+
 /** Detecta qual plataforma a URL pertence */
 export function detectPlatform(url: string): string | null {
   try {

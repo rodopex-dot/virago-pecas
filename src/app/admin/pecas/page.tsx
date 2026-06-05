@@ -22,6 +22,7 @@ export default function AdminPartsPage() {
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [showForm, setShowForm] = useState(false)
   const [editPart, setEditPart] = useState<Part | null>(null)
   const [form, setForm] = useState({ name: '', category: '', description: '' })
@@ -78,10 +79,23 @@ export default function AdminPartsPage() {
     }
   }
 
-  const filtered = parts.filter(p =>
-    p.name.toLowerCase().includes(search.toLowerCase()) ||
-    p.category.toLowerCase().includes(search.toLowerCase())
-  )
+  const toggleCategory = (cat: string) => {
+    setSelectedCategories(prev =>
+      prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]
+    )
+  }
+
+  // Categorias presentes nas peças cadastradas (ordenadas)
+  const presentCategories = [...new Set(parts.map(p => p.category))].sort()
+
+  const filtered = parts.filter(p => {
+    const matchSearch =
+      p.name.toLowerCase().includes(search.toLowerCase()) ||
+      p.category.toLowerCase().includes(search.toLowerCase())
+    const matchCat =
+      selectedCategories.length === 0 || selectedCategories.includes(p.category)
+    return matchSearch && matchCat
+  })
 
   return (
     <div className="p-8">
@@ -89,7 +103,12 @@ export default function AdminPartsPage() {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="font-display text-3xl font-bold uppercase tracking-wide text-white">Peças</h1>
-          <p className="mt-1 text-sm text-zinc-500">{parts.length} peça(s) cadastrada(s)</p>
+          <p className="mt-1 text-sm text-zinc-500">
+            {parts.length} peça(s) cadastrada(s)
+            {(selectedCategories.length > 0 || search) && (
+              <span className="ml-1 text-orange-400">· {filtered.length} exibida(s)</span>
+            )}
+          </p>
         </div>
         <button
           onClick={openCreate}
@@ -109,6 +128,43 @@ export default function AdminPartsPage() {
           className="w-full rounded-xl border border-zinc-700 bg-zinc-900 py-2.5 pl-11 pr-4 text-sm text-white placeholder-zinc-600 outline-none focus:border-orange-500"
         />
       </div>
+
+      {/* Filtros de categoria */}
+      {!loading && presentCategories.length > 0 && (
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <span className="text-xs font-semibold uppercase tracking-widest text-zinc-600">Filtrar:</span>
+          {presentCategories.map(cat => {
+            const active = selectedCategories.includes(cat)
+            const count = parts.filter(p => p.category === cat).length
+            return (
+              <button
+                key={cat}
+                onClick={() => toggleCategory(cat)}
+                className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition ${
+                  active
+                    ? 'border-orange-500 bg-orange-500/15 text-orange-400'
+                    : 'border-zinc-700 bg-zinc-800 text-zinc-400 hover:border-zinc-500 hover:text-white'
+                }`}
+              >
+                {cat}
+                <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
+                  active ? 'bg-orange-500/30 text-orange-300' : 'bg-zinc-700 text-zinc-500'
+                }`}>
+                  {count}
+                </span>
+              </button>
+            )
+          })}
+          {selectedCategories.length > 0 && (
+            <button
+              onClick={() => setSelectedCategories([])}
+              className="text-xs text-zinc-600 underline hover:text-zinc-400"
+            >
+              limpar filtro
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Table */}
       {loading ? (

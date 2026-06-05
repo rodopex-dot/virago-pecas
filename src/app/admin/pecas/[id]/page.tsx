@@ -66,9 +66,10 @@ export default function PartDetailPage({ params }: { params: Promise<{ id: strin
     setShowForm(true)
   }
 
-  // Auto-busca imagem ao sair do campo de link
+  // Auto-busca imagem+preço ao sair do campo de link (só se algum campo estiver vazio)
   const handleUrlBlur = async () => {
-    if (!form.purchaseLink.startsWith('http') || form.imageUrl) return
+    if (!form.purchaseLink.startsWith('http')) return
+    if (form.imageUrl && form.price) return // já tem tudo, não rebusca
     await doFetchImage(form.purchaseLink)
   }
 
@@ -267,7 +268,18 @@ export default function PartDetailPage({ params }: { params: Promise<{ id: strin
                     placeholder="Ex: CF-300" className={inputClass} />
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-zinc-500">Preço (R$)</label>
+                  <div className="mb-1.5 flex items-center justify-between">
+                    <label className="text-xs font-bold uppercase tracking-widest text-zinc-500">Preço (R$)</label>
+                    <button
+                      type="button"
+                      onClick={() => doFetchImage(form.purchaseLink)}
+                      disabled={fetchingImage || !form.purchaseLink}
+                      className="flex items-center gap-1 text-xs text-zinc-500 hover:text-orange-400 disabled:opacity-40"
+                    >
+                      {fetchingImage ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+                      {fetchingImage ? 'Buscando...' : 'Buscar do link'}
+                    </button>
+                  </div>
                   <input type="number" step="0.01" value={form.price}
                     onChange={e => setForm(f => ({ ...f, price: e.target.value }))}
                     placeholder="0.00" className={inputClass} />

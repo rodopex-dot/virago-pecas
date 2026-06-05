@@ -6,7 +6,7 @@
 async function fetchHtml(url: string): Promise<string | null> {
   try {
     const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 10_000)
+    const timeout = setTimeout(() => controller.abort(), 12_000)
 
     const res = await fetch(url, {
       signal: controller.signal,
@@ -20,7 +20,7 @@ async function fetchHtml(url: string): Promise<string | null> {
     clearTimeout(timeout)
     if (!res.ok) return null
 
-    // Lê os primeiros 80 KB (meta tags + primeiro JSON-LD ficam no <head>)
+    // Lê até 200 KB — necessário para capturar __PRELOADED_STATE__ do ML
     const reader = res.body?.getReader()
     if (!reader) return null
     let html = ''
@@ -30,7 +30,7 @@ async function fetchHtml(url: string): Promise<string | null> {
       if (done) break
       html += new TextDecoder().decode(value)
       totalBytes += value?.length ?? 0
-      if (totalBytes > 80_000) { reader.cancel(); break }
+      if (totalBytes > 200_000) { reader.cancel(); break }
     }
     return html
   } catch {
@@ -77,14 +77,14 @@ function extractImageUrl(html: string): string | null {
 }
 
 function parsePrice(raw: string): number | null {
-  // Remove símbolos de moeda, espaços; troca vírgula decimal por ponto
-  const cleaned = raw.replace(/[R$\s]/g, '').replace(/\./g, '').replace(',', '.')
+  // Remove R$, espaços e separadores de milhar; normaliza vírgula decimal
+  const cleaned = raw.replace(/[R$\s]/g, '').replace(/\.(?=\d{3})/g, '').replace(',', '.')
   const value = parseFloat(cleaned)
-  return isFinite(value) && value > 0 ? Math.round(value * 100) / 100 : null
+  return isFinite(value) && value > 1 ? Math.round(value * 100) / 100 : null
 }
 
 function extractPrice(html: string): number | null {
-  // 1. Meta tags de preço (MercadoLivre, Facebook Commerce, Schema.org)
+  // 1. Meta tags (MercadoLivre, Facebook Commerce, Schema.org)
   const metaPatterns = [
     /property=["']product:price:amount["'][^>]+content=["']([^"']+)["']/i,
     /content=["']([^"']+)["'][^>]+property=["']product:price:amount["']/i,
@@ -108,24 +108,34 @@ function extractPrice(html: string): number | null {
       const data = JSON.parse(block[1])
       const items = Array.isArray(data) ? data : [data]
       for (const item of items) {
-        // Product direto
         const price = findPriceInLd(item)
         if (price) return price
       }
     } catch { /* ignore */ }
   }
 
-  // 3. MercadoLivre: preço no HTML como "R$ 299,90" ou data-price="299.90"
-  const mlPatterns = [
-    /data-price=["'](\d+(?:[.,]\d+)?)["']/i,
-    /"price"\s*:\s*(\d+(?:\.\d+)?)/i,
+  // 3. MercadoLivre __PRELOADED_STATE__ e outros padrões JS embutidos
+  const jsPatterns: RegExp[] = [
+    // ML: "amount":299.9,"currency_id":"BRL"
+    /"amount"\s*:\s*(\d+(?:\.\d+)?)\s*,\s*"currency_id"\s*:\s*"BRL"/i,
+    // ML: "sale_price":{"amount":299.9
+    /"sale_price"\s*:\s*\{[^}]{0,100}"amount"\s*:\s*(\d+(?:\.\d+)?)/i,
+    // ML: selling_price
     /"selling_price"\s*:\s*(\d+(?:\.\d+)?)/i,
+    // data-price="299.90"
+    /data-price=["'](\d+(?:[.,]\d+)?)["']/i,
+    // Amazon: "priceAmount":299.90
+    /"priceAmount"\s*:\s*(\d+(?:\.\d+)?)/i,
+    // Amazon: "buyingPrice":{"displayAmount":"R$ 299,90"
+    /"displayAmount"\s*:\s*["'][Rr]\$[\s ]*([\d.,]+)["']/i,
+    // Genérico: "price":299.90 (fora de contexto de moeda)
+    /"price"\s*:\s*(\d{2,6}(?:\.\d{1,2})?)/i,
   ]
-  for (const pattern of mlPatterns) {
+  for (const pattern of jsPatterns) {
     const match = html.match(pattern)
     if (match?.[1]) {
-      const price = parseFloat(match[1])
-      if (isFinite(price) && price > 0) return Math.round(price * 100) / 100
+      const price = parseFloat(match[1].replace(',', '.'))
+      if (isFinite(price) && price > 1) return Math.round(price * 100) / 100
     }
   }
 
@@ -136,21 +146,19 @@ function findPriceInLd(obj: unknown): number | null {
   if (!obj || typeof obj !== 'object') return null
   const o = obj as Record<string, unknown>
 
-  // Verifica offers
   if (o.offers) {
     const offers = Array.isArray(o.offers) ? o.offers : [o.offers]
     for (const offer of offers) {
       const p = (offer as Record<string, unknown>).price
       if (p !== undefined) {
         const val = typeof p === 'string' ? parseFloat(p) : Number(p)
-        if (isFinite(val) && val > 0) return Math.round(val * 100) / 100
+        if (isFinite(val) && val > 1) return Math.round(val * 100) / 100
       }
     }
   }
-  // Verifica price direto
   if (o.price !== undefined) {
     const val = typeof o.price === 'string' ? parseFloat(o.price as string) : Number(o.price)
-    if (isFinite(val) && val > 0) return Math.round(val * 100) / 100
+    if (isFinite(val) && val > 1) return Math.round(val * 100) / 100
   }
   return null
 }

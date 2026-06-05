@@ -5,6 +5,7 @@ type CompatibilityLevel = 'ENCAIXE_PERFEITO' | 'ADAPTACAO_SIMPLES' | 'ADAPTACAO_
 interface CompatibilityBadgeProps {
   level: CompatibilityLevel
   size?: 'sm' | 'md'
+  className?: string
 }
 
 const config = {
@@ -34,12 +35,12 @@ const config = {
   },
 }
 
-export default function CompatibilityBadge({ level, size = 'md' }: CompatibilityBadgeProps) {
+export default function CompatibilityBadge({ level, size = 'md', className = '' }: CompatibilityBadgeProps) {
   const { label, sublabel, icon: Icon, badge, iconClass } = config[level]
 
   if (size === 'sm') {
     return (
-      <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium ${badge}`}>
+      <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium ${badge} ${className}`}>
         <Icon className={`h-3 w-3 ${iconClass}`} />
         {label}
       </span>
@@ -47,7 +48,7 @@ export default function CompatibilityBadge({ level, size = 'md' }: Compatibility
   }
 
   return (
-    <div className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 ${badge}`}>
+    <div className={`flex items-center gap-2 rounded-lg border px-3 py-2 ${badge} ${className}`}>
       <Icon className={`h-5 w-5 ${iconClass}`} />
       <div>
         <p className="text-sm font-semibold">{label}</p>

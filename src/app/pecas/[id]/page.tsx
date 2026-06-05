@@ -140,29 +140,28 @@ export default async function PartPage({ params }: { params: Promise<{ id: strin
                                 )}
                               </div>
                               {cp.price && (
-                                <p className="mt-1 text-2xl font-bold text-green-600 dark:text-green-400">
+                                <p className="mt-1 text-lg font-bold text-green-600 dark:text-green-400">
                                   {formatPrice(cp.price)}
                                 </p>
                               )}
                             </div>
                           </div>
 
-                          {/* Badge + botão Comprar sempre visíveis no topo direito */}
-                          <div className="flex shrink-0 flex-col items-end gap-2">
-                            <CompatibilityBadge level={cp.compatibilityLevel} />
+                          {/* Badge + botão Comprar — mesma largura */}
+                          <div className="flex w-fit shrink-0 flex-col gap-2">
+                            <CompatibilityBadge level={cp.compatibilityLevel} className="w-full" />
                             {cp.purchaseLink && (
                               <a
                                 href={convertToAffiliateLink(cp.purchaseLink, affiliateConfigs)}
                                 target="_blank"
                                 rel="noopener noreferrer sponsored"
-                                className="inline-flex items-center gap-2 rounded-lg bg-orange-500 px-3 py-2 text-sm font-semibold text-white transition hover:bg-orange-600"
+                                className="flex w-full items-center justify-center gap-2 rounded-lg bg-orange-500 px-3 py-2 text-sm font-semibold text-white transition hover:bg-orange-600"
                               >
                                 <ShoppingCart className="h-5 w-5" />
                                 <div>
                                   <p className="text-sm font-semibold leading-none">Comprar</p>
                                   <p className="text-xs opacity-70 leading-none mt-0.5">Ver oferta</p>
                                 </div>
-                                <ExternalLink className="h-3.5 w-3.5 opacity-70" />
                               </a>
                             )}
                           </div>

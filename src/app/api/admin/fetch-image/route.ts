@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { fetchOgImage } from '@/lib/fetchOgImage'
+import { fetchProductData } from '@/lib/fetchOgImage'
 
 export async function POST(request: NextRequest) {
   try {
@@ -8,13 +8,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'URL inválida.' }, { status: 400 })
     }
 
-    const imageUrl = await fetchOgImage(url)
-    if (!imageUrl) {
-      return NextResponse.json({ error: 'Imagem não encontrada neste link.' }, { status: 404 })
+    const { imageUrl, price } = await fetchProductData(url)
+    if (!imageUrl && price === null) {
+      return NextResponse.json({ error: 'Dados não encontrados neste link.' }, { status: 404 })
     }
 
-    return NextResponse.json({ imageUrl })
+    return NextResponse.json({ imageUrl, price })
   } catch {
-    return NextResponse.json({ error: 'Erro ao buscar imagem.' }, { status: 500 })
+    return NextResponse.json({ error: 'Erro ao buscar dados do produto.' }, { status: 500 })
   }
 }

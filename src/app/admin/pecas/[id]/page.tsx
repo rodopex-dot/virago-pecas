@@ -84,9 +84,13 @@ export default function PartDetailPage({ params }: { params: Promise<{ id: strin
       })
       const data = await res.json()
       if (res.ok) {
-        setForm(f => ({ ...f, imageUrl: data.imageUrl }))
+        setForm(f => ({
+          ...f,
+          imageUrl: data.imageUrl ?? f.imageUrl,
+          price: data.price != null && !f.price ? String(data.price) : f.price,
+        }))
       } else {
-        setImageError(data.error ?? 'Imagem não encontrada.')
+        setImageError(data.error ?? 'Dados não encontrados.')
       }
     } finally {
       setFetchingImage(false)

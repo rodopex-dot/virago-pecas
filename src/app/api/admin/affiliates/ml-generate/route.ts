@@ -156,19 +156,41 @@ export async function POST(req: NextRequest) {
   const data = await createRes.json()
 
   // ── 4. Extrair URL do link de afiliado ───────────────────────────────────────
-  // A API pode retornar vários formatos. Tentamos todos conhecidos:
-  const item = Array.isArray(data) ? data[0] : (data?.links?.[0] ?? data)
-  const affiliateUrl =
-    item?.shortLink ??
-    item?.link ??
-    item?.affiliateUrl ??
-    item?.url ??
-    null
+  // A API do ML pode retornar vários formatos — tentamos todos conhecidos.
+  // Tentativa recursiva: busca qualquer campo que pareça um link de afiliado
+  function findAffiliateUrl(obj: unknown): string | null {
+    if (!obj || typeof obj !== 'object') return null
+    if (Array.isArray(obj)) {
+      for (const item of obj) {
+        const found = findAffiliateUrl(item)
+        if (found) return found
+      }
+      return null
+    }
+    const o = obj as Record<string, unknown>
+    // Campos diretos que costumam ter o link
+    const directFields = ['shortLink', 'shortUrl', 'link', 'affiliateUrl', 'generatedUrl', 'url', 'outputUrl']
+    for (const field of directFields) {
+      const val = o[field]
+      if (typeof val === 'string' && val.startsWith('http')) return val
+    }
+    // Recursão em sub-objetos (links, items, data, result...)
+    const subFields = ['links', 'items', 'data', 'result', 'response']
+    for (const field of subFields) {
+      if (o[field]) {
+        const found = findAffiliateUrl(o[field])
+        if (found) return found
+      }
+    }
+    return null
+  }
+
+  const affiliateUrl = findAffiliateUrl(data)
 
   if (!affiliateUrl) {
-    console.error('[ml-generate] Formato de resposta desconhecido:', JSON.stringify(data))
+    console.error('[ml-generate] Formato desconhecido:', JSON.stringify(data))
     return NextResponse.json({
-      error: 'Resposta inesperada da API do ML. Veja o console para detalhes.',
+      error: 'Formato de resposta desconhecido. Veja a resposta bruta abaixo e reporte para ajustar.',
       raw: data,
     }, { status: 502 })
   }

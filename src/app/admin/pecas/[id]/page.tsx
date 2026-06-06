@@ -85,7 +85,12 @@ export default function PartDetailPage({ params }: { params: Promise<{ id: strin
       videoLinks: cp.videos.map(v => v.url).join('\n'),
       imageUrl: cp.imageUrl ?? '',
     })
-    setEditCpLinks(cp.purchaseLinks ?? [])
+    // Inclui o link legado (purchaseLink) caso exista e não esteja no novo array
+    const links = [...(cp.purchaseLinks ?? [])]
+    if (cp.purchaseLink && !links.some(l => l.url === cp.purchaseLink)) {
+      links.push({ id: `legacy-${cp.id}`, url: cp.purchaseLink, platform: detectPlatformClient(cp.purchaseLink) })
+    }
+    setEditCpLinks(links)
     setLinkInput('')
     setImageError('')
     setMlError('')
@@ -160,7 +165,7 @@ export default function PartDetailPage({ params }: { params: Promise<{ id: strin
   }
 
   const handleDeleteLink = async (linkId: string) => {
-    if (linkId.startsWith('temp-')) {
+    if (linkId.startsWith('temp-') || linkId.startsWith('legacy-')) {
       setEditCpLinks(prev => prev.filter(l => l.id !== linkId))
       return
     }
@@ -561,7 +566,7 @@ export default function PartDetailPage({ params }: { params: Promise<{ id: strin
               </div>
 
               <div className="flex gap-3 pt-2">
-                <button type="button" onClick={() => setShowForm(false)}
+                <button type="button" onClick={() => { setShowForm(false); load() }}
                   className="flex-1 rounded-xl border border-zinc-700 py-2.5 text-sm font-semibold text-zinc-400 hover:border-zinc-500">
                   Cancelar
                 </button>

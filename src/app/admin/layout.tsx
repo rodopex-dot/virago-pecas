@@ -2,19 +2,22 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Wrench, LayoutDashboard, Tag, Inbox, Megaphone, FolderOpen, Link2, LinkIcon, LogOut, ExternalLink, BookOpen, Mail, MessageCircle } from 'lucide-react'
+import {
+  Wrench, LayoutDashboard, Tag, Inbox, Megaphone, FolderOpen,
+  Link2, LinkIcon, LogOut, ExternalLink, BookOpen, Mail, MessageCircle,
+} from 'lucide-react'
 
 const navItems = [
-  { href: '/admin/dashboard',    label: 'Dashboard',    icon: LayoutDashboard },
-  { href: '/admin/pecas',        label: 'Peças',         icon: Tag },
-  { href: '/admin/categorias',   label: 'Categorias',    icon: FolderOpen },
-  { href: '/admin/sugestoes',    label: 'Sugestões',     icon: Inbox },
-  { href: '/admin/links',        label: 'Links',         icon: LinkIcon },
-  { href: '/admin/comentarios',  label: 'Comentários',   icon: MessageCircle },
-  { href: '/admin/manuais',      label: 'Manuais',       icon: BookOpen },
-  { href: '/admin/mensagens',    label: 'Mensagens',     icon: Mail },
-  { href: '/admin/anuncios',     label: 'Anúncios',      icon: Megaphone },
-  { href: '/admin/afiliados',    label: 'Afiliados',     icon: Link2 },
+  { href: '/admin/dashboard',   label: 'Dashboard',   icon: LayoutDashboard },
+  { href: '/admin/pecas',       label: 'Peças',        icon: Tag },
+  { href: '/admin/categorias',  label: 'Categorias',   icon: FolderOpen },
+  { href: '/admin/sugestoes',   label: 'Sugestões',    icon: Inbox },
+  { href: '/admin/links',       label: 'Links',        icon: LinkIcon },
+  { href: '/admin/comentarios', label: 'Comentários',  icon: MessageCircle },
+  { href: '/admin/manuais',     label: 'Manuais',      icon: BookOpen },
+  { href: '/admin/mensagens',   label: 'Mensagens',    icon: Mail },
+  { href: '/admin/anuncios',    label: 'Anúncios',     icon: Megaphone },
+  { href: '/admin/afiliados',   label: 'Afiliados',    icon: Link2 },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -30,14 +33,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="flex h-screen overflow-hidden bg-zinc-950">
-      {/* Sidebar */}
-      <aside className="flex w-60 shrink-0 flex-col overflow-y-auto border-r border-zinc-800 bg-zinc-900">
+
+      {/* Sidebar — ícones só (mobile) | ícones + texto (desktop) */}
+      <aside className="flex w-14 shrink-0 flex-col overflow-y-auto border-r border-zinc-800 bg-zinc-900 md:w-60">
+
         {/* Logo */}
-        <div className="flex h-16 items-center gap-3 border-b border-zinc-800 px-5">
+        <div className="flex h-16 shrink-0 items-center justify-center border-b border-zinc-800 md:justify-start md:gap-3 md:px-5">
           <div className="rounded-lg bg-orange-500/10 p-1.5">
             <Wrench className="h-5 w-5 text-orange-500" />
           </div>
-          <div className="leading-none">
+          <div className="hidden leading-none md:block">
             <p className="font-display text-sm font-bold uppercase tracking-wider text-white">
               Admin
             </p>
@@ -46,50 +51,54 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 space-y-1 p-3">
+        <nav className="flex-1 space-y-0.5 p-2 md:space-y-1 md:p-3">
           {navItems.map(({ href, label, icon: Icon }) => {
             const active = pathname === href || pathname.startsWith(href + '/')
             return (
               <Link
                 key={href}
                 href={href}
-                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${
+                title={label}
+                className={`flex items-center justify-center rounded-xl py-2.5 text-sm font-medium transition md:justify-start md:gap-3 md:px-3 ${
                   active
                     ? 'bg-orange-500/15 text-orange-400'
                     : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'
                 }`}
               >
-                <Icon className={`h-4 w-4 ${active ? 'text-orange-400' : ''}`} />
-                {label}
+                <Icon className={`h-[18px] w-[18px] shrink-0 ${active ? 'text-orange-400' : ''}`} />
+                <span className="hidden md:block">{label}</span>
               </Link>
             )
           })}
         </nav>
 
         {/* Bottom */}
-        <div className="space-y-1 border-t border-zinc-800 p-3">
+        <div className="shrink-0 space-y-0.5 border-t border-zinc-800 p-2 md:space-y-1 md:p-3">
           <Link
             href="/"
             target="_blank"
-            className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-zinc-500 transition hover:bg-zinc-800 hover:text-white"
+            title="Ver site"
+            className="flex items-center justify-center rounded-xl py-2.5 text-sm text-zinc-500 transition hover:bg-zinc-800 hover:text-white md:justify-start md:gap-3 md:px-3"
           >
-            <ExternalLink className="h-4 w-4" />
-            Ver site
+            <ExternalLink className="h-[18px] w-[18px]" />
+            <span className="hidden md:block">Ver site</span>
           </Link>
           <button
             onClick={handleLogout}
-            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-zinc-500 transition hover:bg-red-500/10 hover:text-red-400"
+            title="Sair"
+            className="flex w-full items-center justify-center rounded-xl py-2.5 text-sm text-zinc-500 transition hover:bg-red-500/10 hover:text-red-400 md:justify-start md:gap-3 md:px-3"
           >
-            <LogOut className="h-4 w-4" />
-            Sair
+            <LogOut className="h-[18px] w-[18px]" />
+            <span className="hidden md:block">Sair</span>
           </button>
         </div>
       </aside>
 
-      {/* Main */}
+      {/* Conteúdo */}
       <div className="flex-1 min-h-0 overflow-auto">
         {children}
       </div>
+
     </div>
   )
 }

@@ -2,7 +2,7 @@ import nodemailer from 'nodemailer'
 
 function getTransporter() {
   const host = process.env.SMTP_HOST
-  const port = Number(process.env.SMTP_PORT ?? 587)
+  const port = Number(process.env.SMTP_PORT ?? 465)
   const user = process.env.SMTP_USER
   const pass = process.env.SMTP_PASS
 
@@ -11,8 +11,14 @@ function getTransporter() {
   return nodemailer.createTransport({
     host,
     port,
-    secure: port === 465,
+    secure: port === 465, // true para SSL/TLS, false para STARTTLS
     auth: { user, pass },
+    tls: {
+      rejectUnauthorized: false, // aceita certificados self-signed
+    },
+    connectionTimeout: 10000,  // 10s para estabelecer conexão
+    greetingTimeout: 10000,    // 10s para receber o greeting do servidor
+    socketTimeout: 15000,      // 15s para operações de socket
   })
 }
 

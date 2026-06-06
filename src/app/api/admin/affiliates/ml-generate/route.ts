@@ -169,13 +169,13 @@ export async function POST(req: NextRequest) {
     }
     const o = obj as Record<string, unknown>
     // Campos diretos que costumam ter o link
-    const directFields = ['shortLink', 'shortUrl', 'link', 'affiliateUrl', 'generatedUrl', 'url', 'outputUrl']
+    const directFields = ['short_url', 'shortLink', 'shortUrl', 'link', 'affiliateUrl', 'generatedUrl', 'url', 'outputUrl']
     for (const field of directFields) {
       const val = o[field]
       if (typeof val === 'string' && val.startsWith('http')) return val
     }
     // Recursão em sub-objetos (links, items, data, result...)
-    const subFields = ['links', 'items', 'data', 'result', 'response']
+    const subFields = ['urls', 'links', 'items', 'data', 'result', 'response']
     for (const field of subFields) {
       if (o[field]) {
         const found = findAffiliateUrl(o[field])

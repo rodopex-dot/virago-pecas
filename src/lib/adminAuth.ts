@@ -37,6 +37,19 @@ export type AdminUser = {
   updatedAt: Date
 }
 
+/** Usuário virtual para sessões legadas (login só com ADMIN_PASSWORD) */
+const LEGACY_USER: AdminUser = {
+  id: 'legacy',
+  name: 'Admin',
+  email: '',
+  password: '',
+  role: 'superadmin',
+  permissions: [],
+  active: true,
+  createdAt: new Date(0),
+  updatedAt: new Date(0),
+}
+
 export async function getCurrentUser(cookieHeader: string | null): Promise<AdminUser | null> {
   if (!cookieHeader) return null
   const match = cookieHeader.match(/admin_auth=([^;]+)/)
@@ -44,7 +57,8 @@ export async function getCurrentUser(cookieHeader: string | null): Promise<Admin
   const token = decodeURIComponent(match[1])
   const userId = verifySessionNode(token)
   if (!userId) return null
-  if (userId === 'legacy') return null
+  // Sessão legada (login só com ADMIN_PASSWORD): superadmin virtual
+  if (userId === 'legacy') return LEGACY_USER
   try {
     const user = await prisma.adminUser.findUnique({ where: { id: userId } })
     if (!user || !user.active) return null

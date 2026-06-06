@@ -2,9 +2,10 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Wrench, Lock, Loader2, Eye, EyeOff } from 'lucide-react'
+import { Wrench, Lock, Loader2, Eye, EyeOff, Mail } from 'lucide-react'
 
 export default function AdminLoginPage() {
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPass, setShowPass] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -16,10 +17,13 @@ export default function AdminLoginPage() {
     setLoading(true)
     setError('')
     try {
+      const body: { password: string; email?: string } = { password }
+      if (email.trim()) body.email = email.trim()
+
       const res = await fetch('/api/admin/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify(body),
       })
       if (!res.ok) {
         const data = await res.json()
@@ -55,6 +59,23 @@ export default function AdminLoginPage() {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="rounded-2xl border border-zinc-800 bg-zinc-900 p-8">
+
+          {/* Email (optional) */}
+          <div className="mb-4">
+            <label className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-zinc-500">
+              <Mail className="h-3.5 w-3.5" />
+              Email
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Email (opcional para conta pessoal)"
+              className="w-full rounded-xl border border-zinc-700 bg-zinc-800 px-4 py-3 text-white placeholder-zinc-600 outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+            />
+          </div>
+
+          {/* Password */}
           <div className="mb-6">
             <label className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-zinc-500">
               <Lock className="h-3.5 w-3.5" />
@@ -66,7 +87,7 @@ export default function AdminLoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                autoFocus
+                autoFocus={!email}
                 placeholder="••••••••••"
                 className="w-full rounded-xl border border-zinc-700 bg-zinc-800 px-4 py-3 pr-12 text-white placeholder-zinc-600 outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
               />

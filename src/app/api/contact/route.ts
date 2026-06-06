@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { sendContactNotification } from '@/lib/email'
 
 export async function POST(request: NextRequest) {
   try {
@@ -29,6 +30,15 @@ export async function POST(request: NextRequest) {
         message: message.trim(),
       },
     })
+
+    // Send email notification (non-blocking — errors are logged, not thrown)
+    sendContactNotification({
+      name: name.trim(),
+      email: email.trim().toLowerCase(),
+      type,
+      subject: subject?.trim() || null,
+      message: message.trim(),
+    }).catch(() => {/* already logged inside sendContactNotification */})
 
     return NextResponse.json({ success: true, id: msg.id }, { status: 201 })
   } catch {

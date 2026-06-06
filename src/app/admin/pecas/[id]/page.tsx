@@ -5,7 +5,7 @@ import Link from 'next/link'
 import {
   ArrowLeft, Plus, Pencil, Trash2, Loader2,
   CheckCircle, AlertTriangle, AlertOctagon,
-  Image as ImageIcon, RefreshCw, X, Images, ShoppingCart,
+  Image as ImageIcon, RefreshCw, X, Images, ShoppingCart, Zap,
 } from 'lucide-react'
 import { PLATFORM_BUTTON, detectPlatform } from '@/lib/affiliateLinks'
 
@@ -61,6 +61,8 @@ export default function PartDetailPage({ params }: { params: Promise<{ id: strin
   const [addingLink, setAddingLink] = useState(false)
   const [deletingLinkId, setDeletingLinkId] = useState<string | null>(null)
   const [editCpLinks, setEditCpLinks] = useState<PurchaseLink[]>([])
+  const [generatingMl, setGeneratingMl] = useState(false)
+  const [mlError, setMlError] = useState('')
 
   const load = useCallback(() => {
     fetch(`/api/admin/parts/${id}`).then(r => r.json()).then(setPart).finally(() => setLoading(false))
@@ -70,7 +72,7 @@ export default function PartDetailPage({ params }: { params: Promise<{ id: strin
 
   const openCreate = () => {
     setEditCp(null); setForm(emptyForm); setImageError('')
-    setLinkInput(''); setEditCpLinks([])
+    setLinkInput(''); setEditCpLinks([]); setMlError('')
     setShowForm(true)
   }
   const openEdit = (cp: CompatiblePart) => {
@@ -86,7 +88,30 @@ export default function PartDetailPage({ params }: { params: Promise<{ id: strin
     setEditCpLinks(cp.purchaseLinks ?? [])
     setLinkInput('')
     setImageError('')
+    setMlError('')
     setShowForm(true)
+  }
+
+  /** Gera link de afiliado ML automaticamente e coloca no input */
+  const handleGenerateMlLink = async () => {
+    const url = linkInput.trim()
+    if (!url.startsWith('http')) return
+    setGeneratingMl(true); setMlError('')
+    try {
+      const res = await fetch('/api/admin/affiliates/ml-generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url }),
+      })
+      const data = await res.json()
+      if (res.ok && data.affiliateUrl) {
+        setLinkInput(data.affiliateUrl)
+      } else {
+        setMlError(data.error ?? 'Erro ao gerar link ML.')
+      }
+    } finally {
+      setGeneratingMl(false)
+    }
   }
 
   // Auto-busca imagem+preço ao colar link no input de links (debounce 700ms)
@@ -488,11 +513,25 @@ export default function PartDetailPage({ params }: { params: Promise<{ id: strin
                   <input
                     type="url"
                     value={linkInput}
-                    onChange={e => setLinkInput(e.target.value)}
+                    onChange={e => { setLinkInput(e.target.value); setMlError('') }}
                     onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), handleAddLink())}
                     placeholder="Cole o link (Amazon, ML, Shopee, AliExpress...)"
                     className="flex-1 rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-2 text-xs text-white placeholder-zinc-600 outline-none focus:border-orange-500"
                   />
+                  {/* Botão Gerar link ML — aparece quando o input é um link do ML */}
+                  {linkInput.startsWith('http') &&
+                    (linkInput.includes('mercadolivre.com') || linkInput.includes('mercadolibre.com')) && (
+                    <button
+                      type="button"
+                      onClick={handleGenerateMlLink}
+                      disabled={generatingMl}
+                      title="Gerar link de afiliado ML automaticamente"
+                      className="flex shrink-0 items-center gap-1 rounded-lg bg-yellow-500 px-3 py-2 text-xs font-bold text-zinc-900 hover:bg-yellow-400 disabled:opacity-40"
+                    >
+                      {generatingMl ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Zap className="h-3.5 w-3.5" />}
+                      {generatingMl ? 'Gerando...' : 'Link ML'}
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={handleAddLink}
@@ -509,6 +548,14 @@ export default function PartDetailPage({ params }: { params: Promise<{ id: strin
                     <span className="font-semibold text-zinc-300">
                       {PLATFORM_LABELS[detectPlatformClient(linkInput)] ?? 'Outro'}
                     </span>
+                    {(linkInput.includes('mercadolivre.com') || linkInput.includes('mercadolibre.com')) && !linkInput.includes('meli.la') && (
+                      <span className="ml-2 text-yellow-400">← clique em &quot;Link ML&quot; para gerar o link de afiliado</span>
+                    )}
+                  </p>
+                )}
+                {mlError && (
+                  <p className="mt-1.5 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-[11px] text-red-400">
+                    {mlError}
                   </p>
                 )}
               </div>

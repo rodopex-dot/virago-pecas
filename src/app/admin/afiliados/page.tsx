@@ -449,6 +449,238 @@ function MLAutoCard() {
   )
 }
 
+// ─── Shopee Auto ─────────────────────────────────────────────────────────────
+function ShopeeAutoCard() {
+  const [appId,     setAppId]     = useState('')
+  const [appSecret, setAppSecret] = useState('')
+  const [status,    setStatus]    = useState<{ appId: string; hasAppSecret: boolean } | null>(null)
+  const [saving,    setSaving]    = useState(false)
+  const [saved,     setSaved]     = useState(false)
+  const [showSecret, setShowSecret] = useState(false)
+  const [testUrl,   setTestUrl]   = useState('')
+  const [testing,   setTesting]   = useState(false)
+  const [testResult, setTestResult] = useState<{ url?: string; error?: string; raw?: unknown } | null>(null)
+  const [copied,    setCopied]    = useState(false)
+
+  useEffect(() => {
+    fetch('/api/admin/affiliates/shopee-config')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        if (!d) return
+        setAppId(d.appId ?? '')
+        setStatus({ appId: d.appId ?? '', hasAppSecret: d.hasAppSecret })
+      })
+  }, [])
+
+  const handleSave = async () => {
+    setSaving(true)
+    const body: Record<string, string> = { appId }
+    if (appSecret.trim()) body.appSecret = appSecret.trim()
+    const res = await fetch('/api/admin/affiliates/shopee-config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+    setSaving(false)
+    if (res.ok) {
+      setSaved(true); setAppSecret('')
+      setTimeout(() => setSaved(false), 2500)
+      const updated = await fetch('/api/admin/affiliates/shopee-config').then(r => r.json())
+      setStatus({ appId: updated.appId ?? '', hasAppSecret: updated.hasAppSecret })
+    }
+  }
+
+  const handleTest = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!testUrl.startsWith('http')) return
+    setTesting(true); setTestResult(null)
+    try {
+      const res = await fetch('/api/admin/affiliates/shopee-generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: testUrl }),
+      })
+      const data = await res.json()
+      if (res.ok) setTestResult({ url: data.affiliateUrl })
+      else        setTestResult({ error: data.error ?? 'Erro desconhecido', raw: data.raw ?? data })
+    } finally { setTesting(false) }
+  }
+
+  const handleCopy = () => {
+    if (testResult?.url) {
+      navigator.clipboard.writeText(testResult.url)
+      setCopied(true); setTimeout(() => setCopied(false), 2000)
+    }
+  }
+
+  const isReady = !!status?.appId && !!status?.hasAppSecret
+
+  return (
+    <div className="mb-6 rounded-2xl border border-orange-500/30 bg-zinc-900">
+      {/* Header */}
+      <div className="flex items-start justify-between gap-4 border-b border-zinc-800 p-6">
+        <div className="flex items-start gap-4">
+          <div className="rounded-xl border border-orange-500/30 bg-orange-500/10 p-3 text-2xl leading-none">🟠</div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="font-display font-bold uppercase tracking-wide text-white">Shopee</h3>
+              <span className="flex items-center gap-1 rounded-full bg-orange-500/15 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-orange-400">
+                <Zap className="h-3 w-3" /> Auto
+              </span>
+            </div>
+            <p className="mt-0.5 text-xs text-zinc-500">
+              Gera links curtos (shope.ee) via API oficial da Shopee Affiliates — requer App ID e App Secret do painel de afiliados.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Status */}
+      <div className="space-y-2 px-6 pt-5">
+        <div className="flex flex-wrap gap-2">
+          <div className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold ${
+            status?.appId ? 'border-green-500/40 bg-green-500/10 text-green-400' : 'border-zinc-700 bg-zinc-800 text-zinc-500'
+          }`}>
+            <Tag className="h-3.5 w-3.5" />
+            App ID {status?.appId ? `✓ (${status.appId})` : 'não configurado'}
+          </div>
+          <div className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold ${
+            status?.hasAppSecret ? 'border-green-500/40 bg-green-500/10 text-green-400' : 'border-zinc-700 bg-zinc-800 text-zinc-500'
+          }`}>
+            <KeyRound className="h-3.5 w-3.5" />
+            App Secret {status?.hasAppSecret ? '✓' : 'não configurado'}
+          </div>
+        </div>
+
+        {!isReady && (
+          <div className="flex items-start gap-2 rounded-xl border border-blue-500/30 bg-blue-500/10 px-4 py-3">
+            <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-400" />
+            <div className="space-y-1 text-xs text-blue-300">
+              <p className="font-semibold">Como obter App ID e App Secret:</p>
+              <p>1. Acesse <strong>affiliate.shopee.com.br</strong> → Ferramentas → API</p>
+              <p>2. Crie ou acesse um App existente</p>
+              <p>3. Copie o <strong>App ID</strong> e o <strong>App Secret</strong></p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Formulário */}
+      <div className="space-y-4 p-6">
+        <div>
+          <label className="mb-1.5 flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-zinc-500">
+            <Tag className="h-3.5 w-3.5" /> App ID
+          </label>
+          <input
+            type="text"
+            value={appId}
+            onChange={e => setAppId(e.target.value)}
+            placeholder="ex: 18332030606"
+            className="w-full rounded-xl border border-zinc-700 bg-zinc-800 px-4 py-2.5 font-mono text-sm text-zinc-300 placeholder-zinc-700 outline-none focus:border-orange-500/70 focus:ring-2 focus:ring-orange-500/10"
+          />
+        </div>
+
+        <div>
+          <div className="mb-1.5 flex items-center justify-between">
+            <label className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-zinc-500">
+              <KeyRound className="h-3.5 w-3.5" /> App Secret
+              {status?.hasAppSecret && <span className="text-green-400">✓ já salvo</span>}
+            </label>
+            <button type="button" onClick={() => setShowSecret(s => !s)}
+              className="flex items-center gap-1 text-xs text-zinc-600 hover:text-zinc-400">
+              {showSecret ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+              {showSecret ? 'Ocultar' : 'Mostrar'}
+            </button>
+          </div>
+          <input
+            type={showSecret ? 'text' : 'password'}
+            value={appSecret}
+            onChange={e => setAppSecret(e.target.value)}
+            placeholder={status?.hasAppSecret ? 'Deixe em branco para manter o secret salvo.' : 'Cole o App Secret aqui'}
+            className="w-full rounded-xl border border-zinc-700 bg-zinc-800 px-4 py-2.5 font-mono text-sm text-zinc-300 placeholder-zinc-700 outline-none focus:border-orange-500/70 focus:ring-2 focus:ring-orange-500/10"
+          />
+        </div>
+
+        <div className="flex justify-end">
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className={`flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold transition ${
+              saved ? 'bg-green-600 text-white' : 'bg-orange-500 text-white hover:bg-orange-600'
+            } disabled:opacity-50`}
+          >
+            {saving ? <Loader2 className="h-4 w-4 animate-spin" />
+            : saved  ? <CheckCircle className="h-4 w-4" />
+            : <Save className="h-4 w-4" />}
+            {saving ? 'Salvando...' : saved ? 'Salvo!' : 'Salvar configuração'}
+          </button>
+        </div>
+      </div>
+
+      {/* Testador */}
+      {isReady && (
+        <div className="border-t border-zinc-800 p-6">
+          <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-white">
+            <Zap className="h-4 w-4 text-orange-400" />
+            Testar geração de link
+          </h4>
+          <form onSubmit={handleTest} className="flex gap-2">
+            <input type="url" value={testUrl} onChange={e => setTestUrl(e.target.value)}
+              placeholder="https://shopee.com.br/produto/..."
+              className="flex-1 rounded-xl border border-zinc-700 bg-zinc-800 px-4 py-2.5 text-sm text-white placeholder-zinc-600 outline-none focus:border-orange-500/70" />
+            <button type="submit" disabled={testing || !testUrl.startsWith('http')}
+              className="flex items-center gap-2 rounded-xl bg-orange-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-orange-600 disabled:opacity-50">
+              {testing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
+              Gerar
+            </button>
+          </form>
+
+          {testResult && (
+            <div className="mt-3">
+              {testResult.url ? (
+                <div className="rounded-xl border border-green-500/30 bg-green-500/10 p-4">
+                  <div className="mb-2 flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-400" />
+                    <span className="text-xs font-semibold text-green-300">Link gerado com sucesso!</span>
+                  </div>
+                  <p className="mb-3 break-all font-mono text-xs text-green-200">{testResult.url}</p>
+                  <div className="flex gap-2">
+                    <button onClick={handleCopy}
+                      className="flex items-center gap-1.5 rounded-lg border border-green-500/40 px-3 py-1.5 text-xs font-semibold text-green-400 hover:bg-green-500/10">
+                      {copied ? <CheckCircle className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                      {copied ? 'Copiado!' : 'Copiar'}
+                    </button>
+                    <a href={testResult.url} target="_blank" rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 rounded-lg bg-green-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-green-700">
+                      <ExternalLink className="h-3.5 w-3.5" />
+                      Abrir e verificar
+                    </a>
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 space-y-2">
+                  <div className="flex items-start gap-2">
+                    <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-400" />
+                    <p className="text-xs text-red-300">{testResult.error}</p>
+                  </div>
+                  {testResult.raw !== undefined && (
+                    <div>
+                      <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-red-600">Resposta bruta:</p>
+                      <pre className="max-h-40 overflow-auto rounded-lg bg-black/30 p-3 font-mono text-[10px] text-red-200 whitespace-pre-wrap break-all">
+                        {JSON.stringify(testResult.raw, null, 2)}
+                      </pre>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ─── Testador de conversão ────────────────────────────────────────────────────
 interface TestResult {
   original: string
@@ -659,6 +891,9 @@ export default function AfiliadosPage() {
 
       {/* ML Auto-geração */}
       <MLAutoCard />
+
+      {/* Shopee Auto-geração */}
+      <ShopeeAutoCard />
 
       {/* Testador */}
       <LinkTester />

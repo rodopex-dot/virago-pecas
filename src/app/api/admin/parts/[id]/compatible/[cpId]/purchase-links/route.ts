@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { detectPlatform } from '@/lib/affiliateLinks'
 import { generateMLAffiliateLink } from '@/lib/mlAffiliate'
+import { generateShopeeAffiliateLink } from '@/lib/shopeeAffiliate'
 import { getCurrentUser } from '@/lib/adminAuth'
 
 export async function POST(
@@ -20,8 +21,9 @@ export async function POST(
       return NextResponse.json({ error: 'URL inválida.' }, { status: 400 })
     }
 
-    // Converte automaticamente links ML para link de afiliado
-    const finalUrl = await generateMLAffiliateLink(url.trim())
+    // Converte automaticamente para link de afiliado (ML ou Shopee)
+    let finalUrl = await generateMLAffiliateLink(url.trim())
+    finalUrl = await generateShopeeAffiliateLink(finalUrl)
     const platform = detectPlatform(finalUrl) ?? 'other'
 
     const link = await prisma.purchaseLink.create({

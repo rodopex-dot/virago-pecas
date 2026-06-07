@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { detectPlatform } from '@/lib/affiliateLinks'
 import { generateMLAffiliateLink } from '@/lib/mlAffiliate'
+import { generateShopeeAffiliateLink } from '@/lib/shopeeAffiliate'
 
 export async function PUT(
   request: NextRequest,
@@ -25,8 +26,9 @@ export async function PUT(
     if (action === 'approve') {
       // Cria novo PurchaseLink (não substitui — adiciona ao conjunto)
       if (suggestion.purchaseLink) {
-        // Converte automaticamente links ML para link de afiliado
-        const url = await generateMLAffiliateLink(suggestion.purchaseLink.trim())
+        // Converte automaticamente para link de afiliado (ML ou Shopee)
+        let url = await generateMLAffiliateLink(suggestion.purchaseLink.trim())
+        url = await generateShopeeAffiliateLink(url)
         const platform = detectPlatform(url) ?? 'other'
         // Evita duplicata exata
         const exists = await prisma.purchaseLink.findFirst({

@@ -63,6 +63,7 @@ export default function PartDetailPage({ params }: { params: Promise<{ id: strin
   const [deletingLinkId, setDeletingLinkId] = useState<string | null>(null)
   const [editCpLinks, setEditCpLinks] = useState<PurchaseLink[]>([])
   const [generatingMl, setGeneratingMl] = useState(false)
+  const [generatingShopee, setGeneratingShopee] = useState(false)
   const [mlError, setMlError] = useState('')
 
   const load = useCallback(() => {
@@ -79,7 +80,7 @@ export default function PartDetailPage({ params }: { params: Promise<{ id: strin
 
   const openCreate = () => {
     setEditCp(null); setForm(emptyForm); setImageError('')
-    setLinkInput(''); setEditCpLinks([]); setMlError('')
+    setLinkInput(''); setEditCpLinks([]); setMlError(''); setGeneratingShopee(false)
     setShowForm(true)
   }
   const openEdit = (cp: CompatiblePart) => {
@@ -116,14 +117,26 @@ export default function PartDetailPage({ params }: { params: Promise<{ id: strin
         body: JSON.stringify({ url }),
       })
       const data = await res.json()
-      if (res.ok && data.affiliateUrl) {
-        setLinkInput(data.affiliateUrl)
-      } else {
-        setMlError(data.error ?? 'Erro ao gerar link ML.')
-      }
-    } finally {
-      setGeneratingMl(false)
-    }
+      if (res.ok && data.affiliateUrl) setLinkInput(data.affiliateUrl)
+      else setMlError(data.error ?? 'Erro ao gerar link ML.')
+    } finally { setGeneratingMl(false) }
+  }
+
+  /** Gera link de afiliado Shopee automaticamente e coloca no input */
+  const handleGenerateShopeeLink = async () => {
+    const url = linkInput.trim()
+    if (!url.startsWith('http')) return
+    setGeneratingShopee(true); setMlError('')
+    try {
+      const res = await fetch('/api/admin/affiliates/shopee-generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url }),
+      })
+      const data = await res.json()
+      if (res.ok && data.affiliateUrl) setLinkInput(data.affiliateUrl)
+      else setMlError(data.error ?? 'Erro ao gerar link Shopee.')
+    } finally { setGeneratingShopee(false) }
   }
 
   // Auto-busca imagem+preço ao colar link no input de links (debounce 700ms)
@@ -535,17 +548,23 @@ export default function PartDetailPage({ params }: { params: Promise<{ id: strin
                         placeholder="Cole o link (Amazon, ML, Shopee, AliExpress...)"
                         className="flex-1 rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-2 text-xs text-white placeholder-zinc-600 outline-none focus:border-orange-500"
                       />
+                      {/* Botão ML */}
                       {linkInput.startsWith('http') &&
                         (linkInput.includes('mercadolivre.com') || linkInput.includes('mercadolibre.com')) && (
-                        <button
-                          type="button"
-                          onClick={handleGenerateMlLink}
-                          disabled={generatingMl}
+                        <button type="button" onClick={handleGenerateMlLink} disabled={generatingMl}
                           title="Gerar link de afiliado ML automaticamente"
-                          className="flex shrink-0 items-center gap-1 rounded-lg bg-yellow-500 px-3 py-2 text-xs font-bold text-zinc-900 hover:bg-yellow-400 disabled:opacity-40"
-                        >
+                          className="flex shrink-0 items-center gap-1 rounded-lg bg-yellow-500 px-3 py-2 text-xs font-bold text-zinc-900 hover:bg-yellow-400 disabled:opacity-40">
                           {generatingMl ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Zap className="h-3.5 w-3.5" />}
                           {generatingMl ? 'Gerando...' : 'Link ML'}
+                        </button>
+                      )}
+                      {/* Botão Shopee */}
+                      {linkInput.startsWith('http') && linkInput.includes('shopee.com') && (
+                        <button type="button" onClick={handleGenerateShopeeLink} disabled={generatingShopee}
+                          title="Gerar link de afiliado Shopee automaticamente"
+                          className="flex shrink-0 items-center gap-1 rounded-lg bg-orange-500 px-3 py-2 text-xs font-bold text-white hover:bg-orange-600 disabled:opacity-40">
+                          {generatingShopee ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Zap className="h-3.5 w-3.5" />}
+                          {generatingShopee ? 'Gerando...' : 'Link Shopee'}
                         </button>
                       )}
                       <button

@@ -367,7 +367,8 @@ export default function PartDetailPage({ params }: { params: Promise<{ id: strin
 
       {/* Modal criar/editar */}
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/70 p-4 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/70 backdrop-blur-sm">
+          <div className="flex min-h-full items-center justify-center p-4">
           <div className="w-full max-w-lg rounded-2xl border border-zinc-700 bg-zinc-900 p-6">
             <h2 className="font-display mb-5 text-xl font-bold uppercase tracking-wide text-white">
               {editCp ? 'Editar Peça Compatível' : 'Nova Peça Compatível'}
@@ -577,6 +578,7 @@ export default function PartDetailPage({ params }: { params: Promise<{ id: strin
                 </button>
               </div>
             </form>
+          </div>
           </div>
         </div>
       )}

@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react'
 import {
   Link2, ToggleLeft, ToggleRight, Save, Loader2,
-  CheckCircle, Info, AlertTriangle, FlaskConical,
-  ArrowRight, ExternalLink, XCircle, Copy,
+  CheckCircle, Info, AlertTriangle,
+  ExternalLink, XCircle, Copy,
   Zap, KeyRound, Cookie, Tag, RefreshCw, Eye, EyeOff,
 } from 'lucide-react'
 import { PLATFORM_META } from '@/lib/affiliateLinks'
@@ -34,7 +34,7 @@ function PlatformCard({
   const isManual = meta.method === 'manual'
   const dirty = active !== config.active || value !== (config.value ?? '')
   const hasValue = value.trim().length > 0
-  const isReady = isManual ? false : (active && hasValue) // manual nunca fica "verde" — não tem config
+  const isReady = isManual ? false : (active && hasValue)
 
   const handleSave = async () => {
     setSaving(true)
@@ -49,7 +49,6 @@ function PlatformCard({
       isReady ? 'border-green-500/40' : active ? 'border-orange-500/30' : 'border-zinc-800'
     }`}>
       <div className="flex items-start justify-between gap-4 p-6">
-        {/* Info */}
         <div className="flex items-start gap-4">
           <div className={`rounded-xl border p-3 text-2xl leading-none ${
             isReady ? 'border-green-500/30 bg-green-500/10' : 'border-zinc-700 bg-zinc-800'
@@ -62,7 +61,6 @@ function PlatformCard({
           </div>
         </div>
 
-        {/* Toggle */}
         <button
           onClick={() => setActive(a => !a)}
           className="flex shrink-0 items-center gap-2 text-sm font-semibold"
@@ -75,7 +73,6 @@ function PlatformCard({
         </button>
       </div>
 
-      {/* Status */}
       <div className="mx-6 mb-4">
         {isReady && (
           <div className="flex items-center gap-2 rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-2.5">
@@ -85,7 +82,6 @@ function PlatformCard({
             </p>
           </div>
         )}
-        {/* Plataformas manuais: explicação do fluxo */}
         {isManual && (
           <div className="flex items-start gap-2 rounded-xl border border-blue-500/30 bg-blue-500/10 px-4 py-3">
             <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-400" />
@@ -109,7 +105,6 @@ function PlatformCard({
         )}
       </div>
 
-      {/* Campo de configuração — apenas para plataformas automáticas */}
       {!isManual && (
         <div className="px-6 pb-6">
           <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-zinc-500">
@@ -171,7 +166,6 @@ function MLAutoCard() {
   const [saving,    setSaving]    = useState(false)
   const [saved,     setSaved]     = useState(false)
   const [showCookies, setShowCookies] = useState(false)
-  // Teste de geração
   const [testUrl,   setTestUrl]   = useState('')
   const [testing,   setTesting]   = useState(false)
   const [testResult, setTestResult] = useState<{ url?: string; error?: string; raw?: unknown } | null>(null)
@@ -204,7 +198,6 @@ function MLAutoCard() {
       setCookies('')
       setCsrf('')
       setTimeout(() => setSaved(false), 2500)
-      // Atualiza status
       const updated = await fetch('/api/admin/affiliates/ml-config').then(r => r.json())
       setStatus({ hasCookies: updated.hasCookies, hasCsrfToken: updated.hasCsrfToken, cookiesUpdatedAt: updated.cookiesUpdatedAt })
     }
@@ -240,7 +233,6 @@ function MLAutoCard() {
 
   return (
     <div className="mb-6 rounded-2xl border border-yellow-500/30 bg-zinc-900">
-      {/* Header */}
       <div className="flex items-start justify-between gap-4 border-b border-zinc-800 p-6">
         <div className="flex items-start gap-4">
           <div className="rounded-xl border border-yellow-500/30 bg-yellow-500/10 p-3 text-2xl leading-none">🟡</div>
@@ -258,7 +250,6 @@ function MLAutoCard() {
         </div>
       </div>
 
-      {/* Status */}
       <div className="space-y-2 px-6 pt-5">
         <div className="flex flex-wrap gap-2">
           <div className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold ${
@@ -295,9 +286,7 @@ function MLAutoCard() {
         )}
       </div>
 
-      {/* Formulário de configuração */}
       <div className="space-y-4 p-6">
-        {/* Tag */}
         <div>
           <label className="mb-1.5 flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-zinc-500">
             <Tag className="h-3.5 w-3.5" /> Tag de Afiliado
@@ -312,7 +301,6 @@ function MLAutoCard() {
           <p className="mt-1 text-xs text-zinc-600">Sua tag do programa de afiliados ML (campo &quot;tag&quot; na requisição createLink)</p>
         </div>
 
-        {/* Cookies */}
         <div>
           <div className="mb-1.5 flex items-center justify-between">
             <label className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-zinc-500">
@@ -339,7 +327,6 @@ function MLAutoCard() {
           />
         </div>
 
-        {/* CSRF Token */}
         <div>
           <label className="mb-1.5 flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-zinc-500">
             <KeyRound className="h-3.5 w-3.5" /> CSRF Token
@@ -372,7 +359,6 @@ function MLAutoCard() {
         </div>
       </div>
 
-      {/* Testador */}
       {status?.hasCookies && status?.hasCsrfToken && (
         <div className="border-t border-zinc-800 p-6">
           <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-white">
@@ -449,391 +435,6 @@ function MLAutoCard() {
   )
 }
 
-// ─── Shopee Auto ─────────────────────────────────────────────────────────────
-function ShopeeAutoCard() {
-  const [appId,     setAppId]     = useState('')
-  const [appSecret, setAppSecret] = useState('')
-  const [status,    setStatus]    = useState<{ appId: string; hasAppSecret: boolean } | null>(null)
-  const [saving,    setSaving]    = useState(false)
-  const [saved,     setSaved]     = useState(false)
-  const [showSecret, setShowSecret] = useState(false)
-  const [testUrl,   setTestUrl]   = useState('')
-  const [testing,   setTesting]   = useState(false)
-  const [testResult, setTestResult] = useState<{ url?: string; error?: string; raw?: unknown } | null>(null)
-  const [copied,    setCopied]    = useState(false)
-
-  useEffect(() => {
-    fetch('/api/admin/affiliates/shopee-config')
-      .then(r => r.ok ? r.json() : null)
-      .then(d => {
-        if (!d) return
-        setAppId(d.appId ?? '')
-        setStatus({ appId: d.appId ?? '', hasAppSecret: d.hasAppSecret })
-      })
-  }, [])
-
-  const handleSave = async () => {
-    setSaving(true)
-    const body: Record<string, string> = { appId }
-    if (appSecret.trim()) body.appSecret = appSecret.trim()
-    const res = await fetch('/api/admin/affiliates/shopee-config', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    })
-    setSaving(false)
-    if (res.ok) {
-      setSaved(true); setAppSecret('')
-      setTimeout(() => setSaved(false), 2500)
-      const updated = await fetch('/api/admin/affiliates/shopee-config').then(r => r.json())
-      setStatus({ appId: updated.appId ?? '', hasAppSecret: updated.hasAppSecret })
-    }
-  }
-
-  const handleTest = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!testUrl.startsWith('http')) return
-    setTesting(true); setTestResult(null)
-    try {
-      const res = await fetch('/api/admin/affiliates/shopee-generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: testUrl }),
-      })
-      const data = await res.json()
-      if (res.ok) setTestResult({ url: data.affiliateUrl })
-      else        setTestResult({ error: data.error ?? 'Erro desconhecido', raw: data.raw ?? data })
-    } finally { setTesting(false) }
-  }
-
-  const handleCopy = () => {
-    if (testResult?.url) {
-      navigator.clipboard.writeText(testResult.url)
-      setCopied(true); setTimeout(() => setCopied(false), 2000)
-    }
-  }
-
-  const isReady = !!status?.appId && !!status?.hasAppSecret
-
-  return (
-    <div className="mb-6 rounded-2xl border border-orange-500/30 bg-zinc-900">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4 border-b border-zinc-800 p-6">
-        <div className="flex items-start gap-4">
-          <div className="rounded-xl border border-orange-500/30 bg-orange-500/10 p-3 text-2xl leading-none">🟠</div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="font-display font-bold uppercase tracking-wide text-white">Shopee</h3>
-              <span className="flex items-center gap-1 rounded-full bg-orange-500/15 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-orange-400">
-                <Zap className="h-3 w-3" /> Auto
-              </span>
-            </div>
-            <p className="mt-0.5 text-xs text-zinc-500">
-              Gera links curtos (shope.ee) via API oficial da Shopee Affiliates — requer App ID e App Secret do painel de afiliados.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Status */}
-      <div className="space-y-2 px-6 pt-5">
-        <div className="flex flex-wrap gap-2">
-          <div className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold ${
-            status?.appId ? 'border-green-500/40 bg-green-500/10 text-green-400' : 'border-zinc-700 bg-zinc-800 text-zinc-500'
-          }`}>
-            <Tag className="h-3.5 w-3.5" />
-            App ID {status?.appId ? `✓ (${status.appId})` : 'não configurado'}
-          </div>
-          <div className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold ${
-            status?.hasAppSecret ? 'border-green-500/40 bg-green-500/10 text-green-400' : 'border-zinc-700 bg-zinc-800 text-zinc-500'
-          }`}>
-            <KeyRound className="h-3.5 w-3.5" />
-            App Secret {status?.hasAppSecret ? '✓' : 'não configurado'}
-          </div>
-        </div>
-
-        {!isReady && (
-          <div className="flex items-start gap-2 rounded-xl border border-blue-500/30 bg-blue-500/10 px-4 py-3">
-            <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-400" />
-            <div className="space-y-1 text-xs text-blue-300">
-              <p className="font-semibold">Como obter App ID e App Secret:</p>
-              <p>1. Acesse <strong>affiliate.shopee.com.br</strong> → Ferramentas → API</p>
-              <p>2. Crie ou acesse um App existente</p>
-              <p>3. Copie o <strong>App ID</strong> e o <strong>App Secret</strong></p>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Formulário */}
-      <div className="space-y-4 p-6">
-        <div>
-          <label className="mb-1.5 flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-zinc-500">
-            <Tag className="h-3.5 w-3.5" /> App ID
-          </label>
-          <input
-            type="text"
-            value={appId}
-            onChange={e => setAppId(e.target.value)}
-            placeholder="ex: 18332030606"
-            className="w-full rounded-xl border border-zinc-700 bg-zinc-800 px-4 py-2.5 font-mono text-sm text-zinc-300 placeholder-zinc-700 outline-none focus:border-orange-500/70 focus:ring-2 focus:ring-orange-500/10"
-          />
-        </div>
-
-        <div>
-          <div className="mb-1.5 flex items-center justify-between">
-            <label className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-zinc-500">
-              <KeyRound className="h-3.5 w-3.5" /> App Secret
-              {status?.hasAppSecret && <span className="text-green-400">✓ já salvo</span>}
-            </label>
-            <button type="button" onClick={() => setShowSecret(s => !s)}
-              className="flex items-center gap-1 text-xs text-zinc-600 hover:text-zinc-400">
-              {showSecret ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-              {showSecret ? 'Ocultar' : 'Mostrar'}
-            </button>
-          </div>
-          <input
-            type={showSecret ? 'text' : 'password'}
-            value={appSecret}
-            onChange={e => setAppSecret(e.target.value)}
-            placeholder={status?.hasAppSecret ? 'Deixe em branco para manter o secret salvo.' : 'Cole o App Secret aqui'}
-            className="w-full rounded-xl border border-zinc-700 bg-zinc-800 px-4 py-2.5 font-mono text-sm text-zinc-300 placeholder-zinc-700 outline-none focus:border-orange-500/70 focus:ring-2 focus:ring-orange-500/10"
-          />
-        </div>
-
-        <div className="flex justify-end">
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className={`flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold transition ${
-              saved ? 'bg-green-600 text-white' : 'bg-orange-500 text-white hover:bg-orange-600'
-            } disabled:opacity-50`}
-          >
-            {saving ? <Loader2 className="h-4 w-4 animate-spin" />
-            : saved  ? <CheckCircle className="h-4 w-4" />
-            : <Save className="h-4 w-4" />}
-            {saving ? 'Salvando...' : saved ? 'Salvo!' : 'Salvar configuração'}
-          </button>
-        </div>
-      </div>
-
-      {/* Testador */}
-      {isReady && (
-        <div className="border-t border-zinc-800 p-6">
-          <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-white">
-            <Zap className="h-4 w-4 text-orange-400" />
-            Testar geração de link
-          </h4>
-          <form onSubmit={handleTest} className="flex gap-2">
-            <input type="url" value={testUrl} onChange={e => setTestUrl(e.target.value)}
-              placeholder="https://shopee.com.br/produto/..."
-              className="flex-1 rounded-xl border border-zinc-700 bg-zinc-800 px-4 py-2.5 text-sm text-white placeholder-zinc-600 outline-none focus:border-orange-500/70" />
-            <button type="submit" disabled={testing || !testUrl.startsWith('http')}
-              className="flex items-center gap-2 rounded-xl bg-orange-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-orange-600 disabled:opacity-50">
-              {testing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
-              Gerar
-            </button>
-          </form>
-
-          {testResult && (
-            <div className="mt-3">
-              {testResult.url ? (
-                <div className="rounded-xl border border-green-500/30 bg-green-500/10 p-4">
-                  <div className="mb-2 flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-400" />
-                    <span className="text-xs font-semibold text-green-300">Link gerado com sucesso!</span>
-                  </div>
-                  <p className="mb-3 break-all font-mono text-xs text-green-200">{testResult.url}</p>
-                  <div className="flex gap-2">
-                    <button onClick={handleCopy}
-                      className="flex items-center gap-1.5 rounded-lg border border-green-500/40 px-3 py-1.5 text-xs font-semibold text-green-400 hover:bg-green-500/10">
-                      {copied ? <CheckCircle className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                      {copied ? 'Copiado!' : 'Copiar'}
-                    </button>
-                    <a href={testResult.url} target="_blank" rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 rounded-lg bg-green-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-green-700">
-                      <ExternalLink className="h-3.5 w-3.5" />
-                      Abrir e verificar
-                    </a>
-                  </div>
-                </div>
-              ) : (
-                <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 space-y-2">
-                  <div className="flex items-start gap-2">
-                    <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-400" />
-                    <p className="text-xs text-red-300">{testResult.error}</p>
-                  </div>
-                  {testResult.raw !== undefined && (
-                    <div>
-                      <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-red-600">Resposta bruta:</p>
-                      <pre className="max-h-40 overflow-auto rounded-lg bg-black/30 p-3 font-mono text-[10px] text-red-200 whitespace-pre-wrap break-all">
-                        {JSON.stringify(testResult.raw, null, 2)}
-                      </pre>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  )
-}
-
-// ─── Testador de conversão ────────────────────────────────────────────────────
-interface TestResult {
-  original: string
-  converted: string
-  changed: boolean
-  platform: string | null
-}
-
-function LinkTester() {
-  const [url, setUrl] = useState('')
-  const [result, setResult] = useState<TestResult | null>(null)
-  const [testing, setTesting] = useState(false)
-  const [copied, setCopied] = useState(false)
-
-  const handleTest = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!url.trim()) return
-    setTesting(true)
-    setResult(null)
-    try {
-      const res = await fetch('/api/admin/affiliates/test', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url }),
-      })
-      const data = await res.json()
-      setResult(data)
-    } finally {
-      setTesting(false)
-    }
-  }
-
-  const handleCopy = () => {
-    if (!result) return
-    navigator.clipboard.writeText(result.converted)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
-  const platformLabel = result?.platform ? (PLATFORM_META[result.platform]?.label ?? result.platform) : null
-
-  return (
-    <div className="mb-8 rounded-2xl border border-orange-500/20 bg-zinc-900 p-6">
-      <h2 className="font-display mb-1 flex items-center gap-2 text-lg font-bold uppercase tracking-wide text-white">
-        <FlaskConical className="h-5 w-5 text-orange-500" />
-        Testador de Conversão
-      </h2>
-      <p className="mb-4 text-xs text-zinc-500">
-        Cole qualquer link de produto para ver como ele ficará após a conversão de afiliado.
-      </p>
-
-      <form onSubmit={handleTest} className="flex gap-2">
-        <input
-          type="url"
-          value={url}
-          onChange={e => setUrl(e.target.value)}
-          placeholder="https://www.mercadolivre.com.br/produto/... ou amazon.com.br/..."
-          className="flex-1 rounded-xl border border-zinc-700 bg-zinc-800 px-4 py-2.5 text-sm text-white placeholder-zinc-600 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
-        />
-        <button
-          type="submit"
-          disabled={testing || !url.trim()}
-          className="flex items-center gap-2 rounded-xl bg-orange-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-orange-600 disabled:opacity-50"
-        >
-          {testing ? <Loader2 className="h-4 w-4 animate-spin" /> : <FlaskConical className="h-4 w-4" />}
-          Testar
-        </button>
-      </form>
-
-      {result && (
-        <div className="mt-4 space-y-3">
-          {/* Plataforma detectada */}
-          <div className="flex items-center gap-2 text-xs text-zinc-500">
-            <span>Plataforma detectada:</span>
-            <span className={`font-semibold ${platformLabel ? 'text-orange-400' : 'text-zinc-600'}`}>
-              {platformLabel ?? 'Não reconhecida'}
-            </span>
-          </div>
-
-          {/* Original */}
-          <div>
-            <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-zinc-600">URL original</p>
-            <p className="break-all rounded-lg border border-zinc-800 bg-zinc-800/50 px-3 py-2 font-mono text-xs text-zinc-500">
-              {result.original}
-            </p>
-          </div>
-
-          {/* Convertida */}
-          <div>
-            <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-zinc-600">URL convertida</p>
-            <div className={`flex items-start gap-2 rounded-lg border px-3 py-2 ${
-              result.changed
-                ? 'border-green-500/30 bg-green-500/5'
-                : 'border-zinc-700 bg-zinc-800/50'
-            }`}>
-              <p className={`flex-1 break-all font-mono text-xs ${result.changed ? 'text-green-300' : 'text-zinc-500'}`}>
-                {result.converted}
-              </p>
-            </div>
-          </div>
-
-          {/* Resultado */}
-          {result.changed ? (
-            <div className="flex items-center justify-between rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-3">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-green-400" />
-                <p className="text-xs text-green-300 font-semibold">
-                  Conversão bem-sucedida — o link de afiliado está sendo gerado corretamente.
-                </p>
-              </div>
-              <div className="flex shrink-0 gap-2 ml-4">
-                <button
-                  onClick={handleCopy}
-                  className="flex items-center gap-1.5 rounded-lg border border-green-500/40 px-3 py-1.5 text-xs font-semibold text-green-400 hover:bg-green-500/10"
-                >
-                  {copied ? <CheckCircle className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                  {copied ? 'Copiado!' : 'Copiar'}
-                </button>
-                <a
-                  href={result.converted}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 rounded-lg bg-green-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-green-700"
-                >
-                  <ExternalLink className="h-3.5 w-3.5" />
-                  Abrir e verificar
-                </a>
-              </div>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 rounded-xl border border-yellow-500/30 bg-yellow-500/10 px-4 py-3">
-              <XCircle className="h-4 w-4 shrink-0 text-yellow-400" />
-              <p className="text-xs text-yellow-300">
-                {!platformLabel
-                  ? 'Plataforma não reconhecida. Verifique se o domínio é suportado.'
-                  : `Plataforma ${platformLabel} reconhecida mas sem afiliado ativo/configurado.`}
-              </p>
-            </div>
-          )}
-
-          {/* Diff visual */}
-          {result.changed && (
-            <div className="flex items-center gap-2 text-[10px] text-zinc-600">
-              <ArrowRight className="h-3 w-3 text-orange-500" />
-              <span>Parâmetros adicionados ao link original para rastrear sua comissão</span>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  )
-}
-
 // ─── Página principal ─────────────────────────────────────────────────────────
 export default function AfiliadosPage() {
   const [configs, setConfigs] = useState<AffiliateConfig[]>([])
@@ -858,9 +459,13 @@ export default function AfiliadosPage() {
     }
   }
 
-  // Ordena pela ordem definida em PLATFORM_META
+  // ML é gerenciado pelo MLAutoCard (cookie-based), não exibe PlatformCard
+  const AUTO_MANAGED = ['mercadolivre']
+
   const order = Object.keys(PLATFORM_META)
-  const sorted = [...configs].sort((a, b) => order.indexOf(a.platform) - order.indexOf(b.platform))
+  const sorted = [...configs]
+    .filter(c => !AUTO_MANAGED.includes(c.platform))
+    .sort((a, b) => order.indexOf(a.platform) - order.indexOf(b.platform))
 
   return (
     <div className="p-8">
@@ -875,7 +480,6 @@ export default function AfiliadosPage() {
         </p>
       </div>
 
-      {/* Como funciona */}
       <div className="mb-8 rounded-2xl border border-blue-500/20 bg-blue-500/5 p-5">
         <p className="mb-3 flex items-center gap-2 text-sm font-semibold text-blue-300">
           <Info className="h-4 w-4" />
@@ -884,21 +488,15 @@ export default function AfiliadosPage() {
         <ul className="space-y-1 text-xs text-blue-400/80">
           <li>• O sistema detecta automaticamente a plataforma do link de compra (Amazon, ML, Shopee…)</li>
           <li>• Se a plataforma estiver ativa e configurada, o link é convertido para afiliado na hora da exibição</li>
-          <li>• O visitante clica no botão "Comprar" e já chega à loja com seu rastreamento de afiliado</li>
+          <li>• O visitante clica no botão &quot;Comprar&quot; e já chega à loja com seu rastreamento de afiliado</li>
           <li>• Links de plataformas não configuradas são exibidos normalmente, sem alteração</li>
         </ul>
       </div>
 
-      {/* ML Auto-geração */}
+      {/* ML Auto-geração (cookie-based) */}
       <MLAutoCard />
 
-      {/* Shopee Auto-geração */}
-      <ShopeeAutoCard />
-
-      {/* Testador */}
-      <LinkTester />
-
-      {/* Cards de plataforma */}
+      {/* Cards de plataforma — Shopee usa injeção de mmp_pid */}
       {loading ? (
         <div className="flex justify-center py-16">
           <Loader2 className="h-6 w-6 animate-spin text-orange-500" />

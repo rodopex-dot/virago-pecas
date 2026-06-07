@@ -47,6 +47,7 @@ export default function PartDetailPage({ params }: { params: Promise<{ id: strin
   const { id } = use(params)
   const [part, setPart] = useState<Part | null>(null)
   const [loading, setLoading] = useState(true)
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false)
   const [showForm, setShowForm] = useState(false)
   const [editCp, setEditCp] = useState<CompatiblePart | null>(null)
   const [form, setForm] = useState(emptyForm)
@@ -69,6 +70,12 @@ export default function PartDetailPage({ params }: { params: Promise<{ id: strin
   }, [id])
 
   useEffect(() => { load() }, [load])
+
+  useEffect(() => {
+    fetch('/api/admin/me')
+      .then(r => r.ok ? r.json() : null)
+      .then(u => { if (u) setIsSuperAdmin(u.role === 'superadmin') })
+  }, [])
 
   const openCreate = () => {
     setEditCp(null); setForm(emptyForm); setImageError('')
@@ -498,71 +505,80 @@ export default function PartDetailPage({ params }: { params: Promise<{ id: strin
                             {style.label}
                           </span>
                           <span className="flex-1 truncate text-xs text-zinc-400">{pl.url}</span>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteLink(pl.id)}
-                            disabled={deletingLinkId === pl.id}
-                            className="shrink-0 rounded p-1 text-zinc-600 hover:text-red-400"
-                          >
-                            {deletingLinkId === pl.id
-                              ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                              : <X className="h-3.5 w-3.5" />}
-                          </button>
+                          {isSuperAdmin && (
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteLink(pl.id)}
+                              disabled={deletingLinkId === pl.id}
+                              className="shrink-0 rounded p-1 text-zinc-600 hover:text-red-400"
+                            >
+                              {deletingLinkId === pl.id
+                                ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                : <X className="h-3.5 w-3.5" />}
+                            </button>
+                          )}
                         </div>
                       )
                     })}
                   </div>
                 )}
 
-                {/* Adicionar link */}
-                <div className="flex gap-2">
-                  <input
-                    type="url"
-                    value={linkInput}
-                    onChange={e => { setLinkInput(e.target.value); setMlError('') }}
-                    onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), handleAddLink())}
-                    placeholder="Cole o link (Amazon, ML, Shopee, AliExpress...)"
-                    className="flex-1 rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-2 text-xs text-white placeholder-zinc-600 outline-none focus:border-orange-500"
-                  />
-                  {/* Botão Gerar link ML — aparece quando o input é um link do ML */}
-                  {linkInput.startsWith('http') &&
-                    (linkInput.includes('mercadolivre.com') || linkInput.includes('mercadolibre.com')) && (
-                    <button
-                      type="button"
-                      onClick={handleGenerateMlLink}
-                      disabled={generatingMl}
-                      title="Gerar link de afiliado ML automaticamente"
-                      className="flex shrink-0 items-center gap-1 rounded-lg bg-yellow-500 px-3 py-2 text-xs font-bold text-zinc-900 hover:bg-yellow-400 disabled:opacity-40"
-                    >
-                      {generatingMl ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Zap className="h-3.5 w-3.5" />}
-                      {generatingMl ? 'Gerando...' : 'Link ML'}
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={handleAddLink}
-                    disabled={addingLink || !linkInput.startsWith('http')}
-                    className="flex shrink-0 items-center gap-1 rounded-lg bg-orange-500 px-3 py-2 text-xs font-bold text-white hover:bg-orange-600 disabled:opacity-40"
-                  >
-                    {addingLink ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
-                    Adicionar
-                  </button>
-                </div>
-                {linkInput.startsWith('http') && (
-                  <p className="mt-1.5 text-[11px] text-zinc-500">
-                    Plataforma detectada:{' '}
-                    <span className="font-semibold text-zinc-300">
-                      {PLATFORM_LABELS[detectPlatformClient(linkInput)] ?? 'Outro'}
-                    </span>
-                    {(linkInput.includes('mercadolivre.com') || linkInput.includes('mercadolibre.com')) && !linkInput.includes('meli.la') && (
-                      <span className="ml-2 text-yellow-400">← clique em &quot;Link ML&quot; para gerar o link de afiliado</span>
+                {/* Adicionar link — apenas superadmin */}
+                {isSuperAdmin ? (
+                  <>
+                    <div className="flex gap-2">
+                      <input
+                        type="url"
+                        value={linkInput}
+                        onChange={e => { setLinkInput(e.target.value); setMlError('') }}
+                        onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), handleAddLink())}
+                        placeholder="Cole o link (Amazon, ML, Shopee, AliExpress...)"
+                        className="flex-1 rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-2 text-xs text-white placeholder-zinc-600 outline-none focus:border-orange-500"
+                      />
+                      {linkInput.startsWith('http') &&
+                        (linkInput.includes('mercadolivre.com') || linkInput.includes('mercadolibre.com')) && (
+                        <button
+                          type="button"
+                          onClick={handleGenerateMlLink}
+                          disabled={generatingMl}
+                          title="Gerar link de afiliado ML automaticamente"
+                          className="flex shrink-0 items-center gap-1 rounded-lg bg-yellow-500 px-3 py-2 text-xs font-bold text-zinc-900 hover:bg-yellow-400 disabled:opacity-40"
+                        >
+                          {generatingMl ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Zap className="h-3.5 w-3.5" />}
+                          {generatingMl ? 'Gerando...' : 'Link ML'}
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={handleAddLink}
+                        disabled={addingLink || !linkInput.startsWith('http')}
+                        className="flex shrink-0 items-center gap-1 rounded-lg bg-orange-500 px-3 py-2 text-xs font-bold text-white hover:bg-orange-600 disabled:opacity-40"
+                      >
+                        {addingLink ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
+                        Adicionar
+                      </button>
+                    </div>
+                    {linkInput.startsWith('http') && (
+                      <p className="mt-1.5 text-[11px] text-zinc-500">
+                        Plataforma detectada:{' '}
+                        <span className="font-semibold text-zinc-300">
+                          {PLATFORM_LABELS[detectPlatformClient(linkInput)] ?? 'Outro'}
+                        </span>
+                        {(linkInput.includes('mercadolivre.com') || linkInput.includes('mercadolibre.com')) && !linkInput.includes('meli.la') && (
+                          <span className="ml-2 text-yellow-400">← clique em &quot;Link ML&quot; para gerar o link de afiliado</span>
+                        )}
+                      </p>
                     )}
-                  </p>
-                )}
-                {mlError && (
-                  <p className="mt-1.5 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-[11px] text-red-400">
-                    {mlError}
-                  </p>
+                    {mlError && (
+                      <p className="mt-1.5 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-[11px] text-red-400">
+                        {mlError}
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  editCpLinks.length === 0 && (
+                    <p className="text-xs text-zinc-600 italic">Nenhum link cadastrado.</p>
+                  )
                 )}
               </div>
 

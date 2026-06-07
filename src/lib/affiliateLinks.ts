@@ -8,8 +8,8 @@ export interface AffiliateConfig {
  * Metadados estáticos de cada plataforma.
  *
  * method:
- *  'param'   — injeta um query param na URL do produto (Amazon, AliExpress)
- *  'redirect' — prefixa a URL com um link de redirect (Shopee, Magalu)
+ *  'param'   — injeta query params na URL do produto (Amazon, Shopee, AliExpress)
+ *  'redirect' — prefixa a URL com um link de redirect (Magalu)
  *  'manual'  — não há conversão automática; o admin gera e cola o link direto
  */
 export const PLATFORM_META: Record<string, {
@@ -20,6 +20,7 @@ export const PLATFORM_META: Record<string, {
   placeholder: string
   method: 'param' | 'redirect' | 'manual'
   paramName?: string
+  extraParams?: Record<string, string> // params adicionais fixos além do paramName ('' = mesmo valor do paramName)
   domains: string[]
   affiliateDomains?: string[] // domínios que já são links de afiliado (não converter)
 }> = {
@@ -47,12 +48,14 @@ export const PLATFORM_META: Record<string, {
   shopee: {
     label: 'Shopee Brasil',
     logo: '🟠',
-    description: 'Programa Shopee Affiliates. Cole a URL base do seu link de afiliado.',
-    hint: 'Gere em shopee.com.br/affiliates → copie o link base',
-    placeholder: 'https://shope.ee/XXXXXXXX',
-    method: 'redirect',
+    description: 'Programa Shopee Affiliates. Cole seu ID de publisher (an_XXXXXXXXX).',
+    hint: 'Encontre no link gerado pelo painel o parâmetro mmp_pid (ex: an_18331440429)',
+    placeholder: 'an_18331440429',
+    method: 'param',
+    paramName: 'mmp_pid',
+    extraParams: { 'utm_source': '', 'utm_medium': 'affiliates', 'utm_content': '----' },
     domains: ['shopee.com.br'],
-    affiliateDomains: ['shope.ee'],
+    affiliateDomains: ['shope.ee', 's.shopee.com.br'],
   },
   aliexpress: {
     label: 'AliExpress',
@@ -132,10 +135,16 @@ export function convertToAffiliateLink(
 
     const affiliateValue = config.value.trim()
 
-    // Amazon, AliExpress — injeta ?param=valor na URL do produto
+    // Amazon, Shopee, AliExpress — injeta query params na URL do produto
     if (meta.method === 'param' && meta.paramName) {
       parsed.searchParams.delete(meta.paramName)
       parsed.searchParams.set(meta.paramName, affiliateValue)
+      // Params adicionais fixos (ex: utm_source, utm_medium para Shopee)
+      if (meta.extraParams) {
+        for (const [key, val] of Object.entries(meta.extraParams)) {
+          parsed.searchParams.set(key, val === '' ? affiliateValue : val)
+        }
+      }
       return parsed.toString()
     }
 

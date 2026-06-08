@@ -119,9 +119,7 @@ model Banner {
   imageUrl  String   @db.Text
   linkUrl   String?
   altText   String?
-  location  String
-  width     Int?
-  height    Int?
+  locations String[]              // ex: ["topo", "home-topo", "sidebar"]
   active    Boolean  @default(true)
   order     Int      @default(0)
   createdAt DateTime @default(now())

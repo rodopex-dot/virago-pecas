@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
   const banners = await prisma.banner.findMany({
-    orderBy: [{ location: 'asc' }, { order: 'asc' }, { createdAt: 'desc' }],
+    orderBy: [{ order: 'asc' }, { createdAt: 'desc' }],
   })
   return NextResponse.json(banners)
 }
@@ -21,28 +21,24 @@ export async function POST(req: NextRequest) {
     imageUrl: string
     linkUrl?: string
     altText?: string
-    location: string
-    width?: number | null
-    height?: number | null
+    locations: string[]
     active?: boolean
     order?: number
   }
 
-  if (!body.name?.trim() || !body.imageUrl?.trim() || !body.location?.trim()) {
-    return NextResponse.json({ error: 'Nome, imagem e localização são obrigatórios.' }, { status: 400 })
+  if (!body.name?.trim() || !body.imageUrl?.trim() || !body.locations?.length) {
+    return NextResponse.json({ error: 'Nome, imagem e ao menos uma localização são obrigatórios.' }, { status: 400 })
   }
 
   const banner = await prisma.banner.create({
     data: {
-      name:     body.name.trim(),
-      imageUrl: body.imageUrl.trim(),
-      linkUrl:  body.linkUrl?.trim() || null,
-      altText:  body.altText?.trim() || null,
-      location: body.location.trim(),
-      width:    body.width  ?? null,
-      height:   body.height ?? null,
-      active:   body.active ?? true,
-      order:    body.order  ?? 0,
+      name:      body.name.trim(),
+      imageUrl:  body.imageUrl.trim(),
+      linkUrl:   body.linkUrl?.trim()  || null,
+      altText:   body.altText?.trim()  || null,
+      locations: body.locations,
+      active:    body.active  ?? true,
+      order:     body.order   ?? 0,
     },
   })
   return NextResponse.json(banner, { status: 201 })

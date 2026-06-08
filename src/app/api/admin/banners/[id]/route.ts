@@ -15,15 +15,13 @@ export async function PUT(
   const banner = await prisma.banner.update({
     where: { id },
     data: {
-      ...(body.name      !== undefined && { name:     body.name.trim() }),
-      ...(body.imageUrl  !== undefined && { imageUrl: body.imageUrl.trim() }),
-      ...(body.linkUrl   !== undefined && { linkUrl:  body.linkUrl?.trim() || null }),
-      ...(body.altText   !== undefined && { altText:  body.altText?.trim() || null }),
-      ...(body.location  !== undefined && { location: body.location.trim() }),
-      ...(body.width     !== undefined && { width:    body.width }),
-      ...(body.height    !== undefined && { height:   body.height }),
-      ...(body.active    !== undefined && { active:   Boolean(body.active) }),
-      ...(body.order     !== undefined && { order:    Number(body.order) }),
+      ...(body.name      !== undefined && { name:      body.name.trim() }),
+      ...(body.imageUrl  !== undefined && { imageUrl:  body.imageUrl.trim() }),
+      ...(body.linkUrl   !== undefined && { linkUrl:   body.linkUrl?.trim() || null }),
+      ...(body.altText   !== undefined && { altText:   body.altText?.trim() || null }),
+      ...(body.locations !== undefined && { locations: body.locations }),
+      ...(body.active    !== undefined && { active:    Boolean(body.active) }),
+      ...(body.order     !== undefined && { order:     Number(body.order) }),
     },
   })
   return NextResponse.json(banner)

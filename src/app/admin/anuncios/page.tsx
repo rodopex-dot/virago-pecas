@@ -5,8 +5,9 @@ import {
   Megaphone, ToggleLeft, ToggleRight, Save,
   Loader2, CheckCircle, Info, Code2,
   LayoutTemplate, PanelRight, SplitSquareHorizontal,
-  Globe,
+  Globe, Image as ImageIcon,
 } from 'lucide-react'
+import BannersSection from './BannersSection'
 
 interface AdSpace {
   id: string
@@ -191,6 +192,7 @@ function AdCard({
 }
 
 export default function AnunciosPage() {
+  const [tab, setTab] = useState<'adsense' | 'banners'>('adsense')
   const [adSpaces, setAdSpaces] = useState<AdSpace[]>([])
   const [loading, setLoading] = useState(true)
   const [adsenseId, setAdsenseId] = useState('')
@@ -255,18 +257,45 @@ export default function AnunciosPage() {
   return (
     <div className="p-8">
       {/* Header */}
-      <div className="mb-8 flex items-start justify-between">
+      <div className="mb-6 flex items-start justify-between">
         <div>
           <h1 className="font-display text-3xl font-bold uppercase tracking-wide text-white flex items-center gap-3">
             <Megaphone className="h-7 w-7 text-orange-500" />
-            Espaços de Anúncio
+            Anúncios
           </h1>
           <p className="mt-2 text-sm text-zinc-500">
-            Configure os espaços publicitários do site. Quando inativo, o espaço simplesmente
-            não é renderizado — sem placeholder ou espaço em branco visível.
+            Gerencie espaços do Google AdSense e banners particulares.
           </p>
         </div>
       </div>
+
+      {/* Tabs */}
+      <div className="mb-8 flex gap-1 rounded-xl border border-zinc-800 bg-zinc-900 p-1 w-fit">
+        <button
+          onClick={() => setTab('adsense')}
+          className={`flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition ${
+            tab === 'adsense' ? 'bg-orange-500 text-white' : 'text-zinc-500 hover:text-zinc-300'
+          }`}
+        >
+          <Globe className="h-4 w-4" />
+          Google AdSense
+        </button>
+        <button
+          onClick={() => setTab('banners')}
+          className={`flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition ${
+            tab === 'banners' ? 'bg-orange-500 text-white' : 'text-zinc-500 hover:text-zinc-300'
+          }`}
+        >
+          <ImageIcon className="h-4 w-4" />
+          Banners Particulares
+        </button>
+      </div>
+
+      {/* Tab: Banners Particulares */}
+      {tab === 'banners' && <BannersSection />}
+
+      {/* Tab: Google AdSense */}
+      {tab === 'adsense' && <>
 
       {/* Guia de uso */}
       <div className="mb-8 rounded-2xl border border-blue-500/20 bg-blue-500/5 p-5">
@@ -374,6 +403,8 @@ export default function AnunciosPage() {
           </div>
         </div>
       </div>
+
+      </>}
     </div>
   )
 }

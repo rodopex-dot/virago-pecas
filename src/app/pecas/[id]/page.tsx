@@ -4,6 +4,7 @@ import Link from 'next/link'
 import CompatibilityBadge from '@/components/CompatibilityBadge'
 import VideoEmbed from '@/components/VideoEmbed'
 import AdBanner from '@/components/AdBanner'
+import BannerZone from '@/components/BannerZone'
 import { categoryConfig } from '@/components/CategoryCard'
 import { convertToAffiliateLink, PLATFORM_BUTTON } from '@/lib/affiliateLinks'
 import LinkSuggestionForm from '@/components/LinkSuggestionForm'
@@ -57,10 +58,16 @@ export default async function PartPage({ params }: { params: Promise<{ id: strin
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
+      {/* Banners — topo (todas as páginas) */}
+      <BannerZone location="topo" className="mb-4" />
+
       {/* Ad topo */}
       <div className="mb-6 flex justify-center">
         <AdBanner slot="top" />
       </div>
+
+      {/* Banners — topo da página de peça */}
+      <BannerZone location="peca-topo" className="mb-6" />
 
       {/* Breadcrumb */}
       <Link
@@ -226,6 +233,9 @@ export default async function PartPage({ params }: { params: Promise<{ id: strin
             })}
           </div>
 
+          {/* Banners — rodapé da página de peça */}
+          <BannerZone location="peca-rodape" className="mt-6" />
+
           {/* CTA contribuição */}
           <div className="mt-6 flex flex-col items-center justify-between gap-4 rounded-2xl border border-dashed border-orange-500/30 bg-orange-500/5 p-5 sm:flex-row">
             <p className="text-sm text-zinc-600 dark:text-zinc-400">
@@ -243,7 +253,8 @@ export default async function PartPage({ params }: { params: Promise<{ id: strin
 
         {/* Sidebar */}
         <aside className="hidden w-64 shrink-0 lg:block">
-          <div className="sticky top-24">
+          <div className="sticky top-24 space-y-4">
+            <BannerZone location="sidebar" />
             <AdBanner slot="sidebar" />
           </div>
         </aside>

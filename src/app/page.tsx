@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import SearchBar from '@/components/SearchBar'
 import AdBanner from '@/components/AdBanner'
+import BannerZone from '@/components/BannerZone'
 import CompatibilityBadge from '@/components/CompatibilityBadge'
 import CategoryCard from '@/components/CategoryCard'
 import { ChevronRight, PlusCircle, Bike, Search } from 'lucide-react'
@@ -50,6 +51,9 @@ export default async function HomePage({
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
+      {/* Banners — topo */}
+      <BannerZone location="topo" className="mb-4" />
+
       {/* Ad top */}
       <div className="mb-8 flex justify-center">
         <AdBanner slot="top" />
@@ -90,6 +94,9 @@ export default async function HomePage({
 
       <div className="flex gap-6">
         <div className="flex-1 min-w-0">
+
+          {/* Banners — home topo */}
+          <BannerZone location="home-topo" className="mb-4" />
 
           {/* Grid de categorias */}
           {!query && categories.length > 0 && (
@@ -167,8 +174,9 @@ export default async function HomePage({
                     </div>
 
                     {catIdx === 0 && resultCategories.length > 1 && (
-                      <div className="mt-4 flex justify-center">
+                      <div className="mt-4 flex flex-col items-center gap-3">
                         <AdBanner slot="inline" />
+                        <BannerZone location="home-meio" />
                       </div>
                     )}
                   </div>
@@ -176,6 +184,9 @@ export default async function HomePage({
               })}
             </div>
           )}
+
+          {/* Banners — home rodapé */}
+          <BannerZone location="home-rodape" className="mt-6" />
 
           {/* CTA */}
           {!query && parts.length > 0 && (
@@ -202,6 +213,7 @@ export default async function HomePage({
         {/* Sidebar */}
         <aside className="hidden w-64 shrink-0 lg:block">
           <div className="sticky top-24 space-y-4">
+            <BannerZone location="sidebar" />
             <AdBanner slot="sidebar" />
             <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
               <p className="font-display text-sm font-bold uppercase tracking-wide text-zinc-900 dark:text-white">

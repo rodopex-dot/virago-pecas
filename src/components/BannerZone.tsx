@@ -32,12 +32,10 @@ export default async function BannerZone({ location, className = '' }: Props) {
               alt={banner.altText ?? banner.name}
               width={meta?.width}
               height={meta?.height}
-              style={{
-                width:    meta ? `${meta.width}px`  : undefined,
-                height:   meta ? `${meta.height}px` : undefined,
-                maxWidth: '100%',
-                display:  'block',
-              }}
+              style={meta?.fluid
+                ? { width: '100%', height: 'auto', display: 'block' }
+                : { maxWidth: '100%', height: 'auto', display: 'block' }
+              }
               loading="lazy"
             />
           )

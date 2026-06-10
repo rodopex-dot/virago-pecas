@@ -2,7 +2,7 @@ import crypto from 'crypto'
 import { prisma } from '@/lib/prisma'
 import { isAlreadyAffiliateLink } from '@/lib/affiliateLinks'
 
-const SHOPEE_API = 'https://open-api.affiliate.shopee.com/graphql'
+const SHOPEE_API = 'https://open-api.affiliate.shopee.com.br/graphql'
 
 const GENERATE_SHORT_LINK = `mutation generateShortLink($input: GenerateShortLinkInput!) {
   generateShortLink(input: $input) {

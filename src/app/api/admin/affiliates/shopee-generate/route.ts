@@ -3,7 +3,7 @@ import { getCurrentUser } from '@/lib/adminAuth'
 import { prisma } from '@/lib/prisma'
 import crypto from 'crypto'
 
-const SHOPEE_API = 'https://open-api.affiliate.shopee.com/graphql'
+const SHOPEE_API = 'https://open-api.affiliate.shopee.com.br/graphql'
 
 const GENERATE_SHORT_LINK = `mutation generateShortLink($input: GenerateShortLinkInput!) {
   generateShortLink(input: $input) {

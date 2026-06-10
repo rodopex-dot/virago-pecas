@@ -6,7 +6,7 @@ const SHOPEE_API = 'https://open-api.affiliate.shopee.com.br/graphql'
 
 function buildGenerateQuery(originUrl: string): string {
   const escaped = originUrl.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
-  return `mutation { generateShortLink(originUrl: "${escaped}") { shortLink longLink } }`
+  return `mutation { generateShortLink(input: {originUrl: "${escaped}"}) { shortLink longLink } }`
 }
 
 export function isShopeeUrl(url: string): boolean {

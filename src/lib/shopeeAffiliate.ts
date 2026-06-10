@@ -79,11 +79,12 @@ export async function generateShopeeAffiliateLink(url: string): Promise<string> 
     }
 
     const data = JSON.parse(text)
-    const shortLink = data?.data?.generateShortLink?.shortLink as string | undefined
-    if (shortLink) return shortLink
+    const result = data?.data?.generateShortLink
+    const affiliateUrl = result?.shortLink || result?.longLink
+    if (affiliateUrl) return affiliateUrl as string
 
     const gqlErrors = data?.errors
-    console.warn('[shopee-affiliate] Resposta sem shortLink:', JSON.stringify(gqlErrors ?? data))
+    console.warn('[shopee-affiliate] Resposta sem shortLink/longLink:', JSON.stringify(gqlErrors ?? data))
     return url
   } catch (e) {
     console.warn('[shopee-affiliate] Erro na chamada API:', e)

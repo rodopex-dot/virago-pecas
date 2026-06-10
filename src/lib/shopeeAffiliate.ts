@@ -4,11 +4,10 @@ import { isAlreadyAffiliateLink } from '@/lib/affiliateLinks'
 
 const SHOPEE_API = 'https://open-api.affiliate.shopee.com.br/graphql'
 
-const GENERATE_SHORT_LINK = `mutation generateShortLink($input: GenerateShortLinkInput!) {
-  generateShortLink(input: $input) {
-    shortLink
-  }
-}`
+function buildGenerateQuery(originUrl: string): string {
+  const escaped = originUrl.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+  return `mutation { generateShortLink(originUrl: "${escaped}") { shortLink longLink } }`
+}
 
 export function isShopeeUrl(url: string): boolean {
   try {
@@ -58,10 +57,7 @@ export async function generateShopeeAffiliateLink(url: string): Promise<string> 
 
   const { appId, secret } = creds
   const timestamp = Math.floor(Date.now() / 1000)
-  const body = JSON.stringify({
-    query: GENERATE_SHORT_LINK,
-    variables: { input: { originUrl: url } },
-  })
+  const body = JSON.stringify({ query: buildGenerateQuery(url) })
 
   const signature = buildSignature(appId, secret, timestamp, body)
 

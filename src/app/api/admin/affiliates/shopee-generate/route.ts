@@ -5,11 +5,10 @@ import crypto from 'crypto'
 
 const SHOPEE_API = 'https://open-api.affiliate.shopee.com.br/graphql'
 
-const GENERATE_SHORT_LINK = `mutation generateShortLink($input: GenerateShortLinkInput!) {
-  generateShortLink(input: $input) {
-    shortLink
-  }
-}`
+function buildGenerateQuery(originUrl: string): string {
+  const escaped = originUrl.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+  return `mutation { generateShortLink(originUrl: "${escaped}") { shortLink longLink } }`
+}
 
 export async function POST(req: NextRequest) {
   const user = await getCurrentUser(req.headers.get('cookie'))
@@ -47,10 +46,7 @@ export async function POST(req: NextRequest) {
   }
 
   const timestamp = Math.floor(Date.now() / 1000)
-  const body = JSON.stringify({
-    query: GENERATE_SHORT_LINK,
-    variables: { input: { originUrl: url } },
-  })
+  const body = JSON.stringify({ query: buildGenerateQuery(url) })
 
   const signature = crypto.createHash('sha256').update(`${appId}${timestamp}${body}${secret}`).digest('hex')
 

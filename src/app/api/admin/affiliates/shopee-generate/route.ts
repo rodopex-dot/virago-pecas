@@ -52,8 +52,7 @@ export async function POST(req: NextRequest) {
     variables: { input: { originUrl: url } },
   })
 
-  const signingString = `${appId}${timestamp}${body}`
-  const signature = crypto.createHmac('sha256', secret).update(signingString).digest('hex')
+  const signature = crypto.createHash('sha256').update(`${appId}${timestamp}${body}${secret}`).digest('hex')
 
   let rawText = ''
   try {

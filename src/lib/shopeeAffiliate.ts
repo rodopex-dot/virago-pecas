@@ -18,9 +18,8 @@ export function isShopeeUrl(url: string): boolean {
 }
 
 function buildSignature(appId: string, secret: string, timestamp: number, payload: string): string {
-  // Shopee Affiliate API BR: appId + timestamp + body (sem separadores)
-  const signingString = `${appId}${timestamp}${payload}`
-  return crypto.createHmac('sha256', secret).update(signingString).digest('hex')
+  // SHA256(AppId + Timestamp + Payload + Secret) — não é HMAC
+  return crypto.createHash('sha256').update(`${appId}${timestamp}${payload}${secret}`).digest('hex')
 }
 
 function parseCredentials(raw: string): { appId: string; secret: string } | null {

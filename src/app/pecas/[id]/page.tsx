@@ -7,6 +7,7 @@ import AdBanner from '@/components/AdBanner'
 import BannerZone from '@/components/BannerZone'
 import { categoryConfig } from '@/components/CategoryCard'
 import { convertToAffiliateLink, PLATFORM_BUTTON } from '@/lib/affiliateLinks'
+import { generateShopeeAffiliateLink, isShopeeUrl } from '@/lib/shopeeAffiliate'
 import LinkSuggestionForm from '@/components/LinkSuggestionForm'
 import CommentsSection from '@/components/CommentsSection'
 import { ArrowLeft, ExternalLink, ShoppingCart } from 'lucide-react'
@@ -52,6 +53,21 @@ export default async function PartPage({ params }: { params: Promise<{ id: strin
     prisma.affiliateConfig.findMany(),
   ])
   if (!part) notFound()
+
+  // Pré-converte URLs Shopee via API (async — não pode ser feito dentro do JSX)
+  const shopeeUrlMap = new Map<string, string>()
+  const shopeeUrls = new Set<string>()
+  for (const cp of part.compatibleParts) {
+    for (const pl of cp.purchaseLinks) {
+      if (isShopeeUrl(pl.url)) shopeeUrls.add(pl.url)
+    }
+    if (cp.purchaseLink && isShopeeUrl(cp.purchaseLink)) shopeeUrls.add(cp.purchaseLink)
+  }
+  if (shopeeUrls.size > 0) {
+    await Promise.all([...shopeeUrls].map(async u => {
+      shopeeUrlMap.set(u, await generateShopeeAffiliateLink(u))
+    }))
+  }
 
   const catCfg = categoryConfig[part.category]
   const CatIcon = catCfg?.icon
@@ -162,7 +178,7 @@ export default async function PartPage({ params }: { params: Promise<{ id: strin
                               <div className="flex flex-wrap justify-end gap-1.5">
                                 {cp.purchaseLinks.map(pl => {
                                   const btn = PLATFORM_BUTTON[pl.platform] ?? PLATFORM_BUTTON.other
-                                  const href = convertToAffiliateLink(pl.url, affiliateConfigs)
+                                  const href = shopeeUrlMap.get(pl.url) ?? convertToAffiliateLink(pl.url, affiliateConfigs)
                                   return (
                                     <a
                                       key={pl.id}
@@ -179,7 +195,7 @@ export default async function PartPage({ params }: { params: Promise<{ id: strin
                                 {/* Fallback para o campo legado */}
                                 {cp.purchaseLinks.length === 0 && cp.purchaseLink && (
                                   <a
-                                    href={convertToAffiliateLink(cp.purchaseLink, affiliateConfigs)}
+                                    href={shopeeUrlMap.get(cp.purchaseLink) ?? convertToAffiliateLink(cp.purchaseLink, affiliateConfigs)}
                                     target="_blank"
                                     rel="noopener noreferrer sponsored"
                                     className="flex items-center gap-1.5 rounded-lg bg-orange-500 px-2.5 py-1.5 text-xs font-bold text-white transition hover:bg-orange-600"

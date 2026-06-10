@@ -1,47 +1,96 @@
-/**
- * Geração server-side de links de afiliado da Shopee.
- * Injeta mmp_pid + UTM params na URL do produto (sem API, sem cookies).
- * Formato: ?mmp_pid=an_XXXXX&utm_source=an_XXXXX&utm_medium=affiliates&utm_content=----
- */
-
+import crypto from 'crypto'
 import { prisma } from '@/lib/prisma'
 import { isAlreadyAffiliateLink } from '@/lib/affiliateLinks'
 
-function isShopeeUrl(url: string): boolean {
+const SHOPEE_API = 'https://open-api.affiliate.shopee.com/graphql'
+
+const GENERATE_SHORT_LINK = `mutation generateShortLink($input: GenerateShortLinkInput!) {
+  generateShortLink(input: $input) {
+    shortLink
+  }
+}`
+
+export function isShopeeUrl(url: string): boolean {
   try {
     const h = new URL(url).hostname.toLowerCase()
     return h.includes('shopee.com.br') || h.includes('shopee.com')
   } catch { return false }
 }
 
+function buildSignature(appId: string, secret: string, timestamp: number, payload: string): string {
+  const signingString = `${appId}|${timestamp}|${payload}`
+  return crypto.createHmac('sha256', secret).update(signingString).digest('hex')
+}
+
+function parseCredentials(raw: string): { appId: string; secret: string } | null {
+  try {
+    const parsed = JSON.parse(raw)
+    const appId = String(parsed.appId ?? '').trim()
+    const secret = String(parsed.secret ?? '').trim()
+    if (!appId || !secret) return null
+    return { appId, secret }
+  } catch {
+    return null
+  }
+}
+
 /**
- * Converte uma URL da Shopee em link de afiliado injetando mmp_pid + UTM params.
- * Retorna a URL com parâmetros ou a URL original em caso de falha.
+ * Converte URL da Shopee em link curto (shope.ee) via Shopee Affiliate Open API.
+ * Credenciais armazenadas em affiliateConfig.value como JSON: {"appId":"...","secret":"..."}.
  */
 export async function generateShopeeAffiliateLink(url: string): Promise<string> {
   if (!isShopeeUrl(url) || isAlreadyAffiliateLink(url)) return url
 
-  // Busca configuração do afiliado Shopee no banco
   const config = await prisma.affiliateConfig.findUnique({
     where: { platform: 'shopee' },
   })
 
   if (!config?.active || !config.value?.trim()) {
-    console.warn('[shopee-affiliate] Config inativa ou sem valor — usando URL original.')
+    console.warn('[shopee-affiliate] Config inativa ou sem credenciais.')
     return url
   }
 
-  const publisherId = config.value.trim() // ex: "an_18331440429"
+  const creds = parseCredentials(config.value)
+  if (!creds) {
+    console.warn('[shopee-affiliate] Credenciais inválidas — formato esperado: {"appId":"...","secret":"..."}')
+    return url
+  }
+
+  const { appId, secret } = creds
+  const timestamp = Math.floor(Date.now() / 1000)
+  const body = JSON.stringify({
+    query: GENERATE_SHORT_LINK,
+    variables: { input: { originUrl: url } },
+  })
+
+  const signature = buildSignature(appId, secret, timestamp, body)
 
   try {
-    const parsed = new URL(url)
-    parsed.searchParams.set('mmp_pid',      publisherId)
-    parsed.searchParams.set('utm_source',   publisherId)
-    parsed.searchParams.set('utm_medium',   'affiliates')
-    parsed.searchParams.set('utm_content',  '----')
-    return parsed.toString()
+    const res = await fetch(SHOPEE_API, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `SHA256 Signature=${signature},Timestamp=${timestamp},AppId=${appId}`,
+      },
+      body,
+    })
+
+    const text = await res.text()
+
+    if (!res.ok) {
+      console.warn('[shopee-affiliate] API HTTP error:', res.status, text)
+      return url
+    }
+
+    const data = JSON.parse(text)
+    const shortLink = data?.data?.generateShortLink?.shortLink as string | undefined
+    if (shortLink) return shortLink
+
+    const gqlErrors = data?.errors
+    console.warn('[shopee-affiliate] Resposta sem shortLink:', JSON.stringify(gqlErrors ?? data))
+    return url
   } catch (e) {
-    console.warn('[shopee-affiliate] Erro ao montar URL:', e)
+    console.warn('[shopee-affiliate] Erro na chamada API:', e)
     return url
   }
 }

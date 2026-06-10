@@ -18,7 +18,7 @@ export const PLATFORM_META: Record<string, {
   description: string
   hint: string
   placeholder: string
-  method: 'param' | 'redirect' | 'manual'
+  method: 'param' | 'redirect' | 'manual' | 'api'
   paramName?: string
   extraParams?: Record<string, string> // params adicionais fixos além do paramName ('' = mesmo valor do paramName)
   domains: string[]
@@ -48,12 +48,10 @@ export const PLATFORM_META: Record<string, {
   shopee: {
     label: 'Shopee Brasil',
     logo: '🟠',
-    description: 'Programa Shopee Affiliates. Cole seu ID de publisher (an_XXXXXXXXX).',
-    hint: 'Encontre no link gerado pelo painel o parâmetro mmp_pid (ex: an_18331440429)',
-    placeholder: 'an_18331440429',
-    method: 'param',
-    paramName: 'mmp_pid',
-    extraParams: { 'utm_source': '', 'utm_medium': 'affiliates', 'utm_content': '----' },
+    description: 'Gera links curtos (shope.ee) via Shopee Affiliate Open API — requer App ID e Senha do portal de afiliados.',
+    hint: 'Acesse portal.affiliate.shopee.com.br → Ferramentas API para obter App ID e Secret Key',
+    placeholder: '',
+    method: 'api',
     domains: ['shopee.com.br'],
     affiliateDomains: ['shope.ee', 's.shopee.com.br'],
   },
@@ -127,8 +125,8 @@ export function convertToAffiliateLink(
     const meta = PLATFORM_META[config.platform]
     if (!meta) continue
 
-    // Plataformas manuais não têm conversão automática
-    if (meta.method === 'manual') continue
+    // Plataformas manuais ou via API externa não têm conversão síncrona
+    if (meta.method === 'manual' || meta.method === 'api') continue
 
     const matches = meta.domains.some(d => hostname === d || hostname.endsWith('.' + d))
     if (!matches) continue

@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `SHA256 Signature=${signature},Timestamp=${timestamp},AppId=${appId}`,
+        'Authorization': `SHA256 Credential=${appId}, Timestamp=${timestamp}, Signature=${signature}`,
       },
       body,
     })

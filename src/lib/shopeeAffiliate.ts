@@ -70,7 +70,7 @@ export async function generateShopeeAffiliateLink(url: string): Promise<string> 
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `SHA256 Signature=${signature},Timestamp=${timestamp},AppId=${appId}`,
+        'Authorization': `SHA256 Credential=${appId}, Timestamp=${timestamp}, Signature=${signature}`,
       },
       body,
     })

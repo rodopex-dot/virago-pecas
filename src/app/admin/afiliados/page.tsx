@@ -171,7 +171,7 @@ function ShopeeApiCard({
   const [saved, setSaved] = useState(false)
   const [testUrl, setTestUrl] = useState('')
   const [testing, setTesting] = useState(false)
-  const [testResult, setTestResult] = useState<{ url?: string; error?: string } | null>(null)
+  const [testResult, setTestResult] = useState<{ url?: string; error?: string; raw?: unknown } | null>(null)
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
@@ -208,7 +208,7 @@ function ShopeeApiCard({
       })
       const data = await res.json()
       if (res.ok) setTestResult({ url: data.affiliateUrl })
-      else        setTestResult({ error: data.error ?? 'Erro desconhecido' })
+      else        setTestResult({ error: data.error ?? 'Erro desconhecido', raw: data.raw ?? null })
     } finally { setTesting(false) }
   }
 
@@ -390,11 +390,19 @@ function ShopeeApiCard({
                   </div>
                 </div>
               ) : (
-                <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4">
+                <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 space-y-2">
                   <div className="flex items-start gap-2">
                     <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-400" />
                     <p className="text-xs text-red-300">{testResult.error}</p>
                   </div>
+                  {testResult.raw !== undefined && testResult.raw !== null && (
+                    <div>
+                      <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-red-600">Resposta bruta da API Shopee:</p>
+                      <pre className="max-h-40 overflow-auto rounded-lg bg-black/30 p-3 font-mono text-[10px] text-red-200 whitespace-pre-wrap break-all">
+                        {JSON.stringify(testResult.raw, null, 2)}
+                      </pre>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

@@ -1,14 +1,15 @@
-/**
- * POST /api/admin/affiliates/shopee-generate
- * Body: { url: string }
- *
- * Converte URL da Shopee para link de afiliado injetando mmp_pid + UTM params.
- * Usa a configuração da tabela AffiliateConfig (platform = 'shopee').
- */
-
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/adminAuth'
-import { generateShopeeAffiliateLink } from '@/lib/shopeeAffiliate'
+import { prisma } from '@/lib/prisma'
+import crypto from 'crypto'
+
+const SHOPEE_API = 'https://open-api.affiliate.shopee.com/graphql'
+
+const GENERATE_SHORT_LINK = `mutation generateShortLink($input: GenerateShortLinkInput!) {
+  generateShortLink(input: $input) {
+    shortLink
+  }
+}`
 
 export async function POST(req: NextRequest) {
   const user = await getCurrentUser(req.headers.get('cookie'))
@@ -19,13 +20,77 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'URL inválida.' }, { status: 400 })
   }
 
-  const affiliateUrl = await generateShopeeAffiliateLink(url)
+  // Lê config direto do banco para diagnóstico detalhado
+  const config = await prisma.affiliateConfig.findUnique({ where: { platform: 'shopee' } })
 
-  if (affiliateUrl === url) {
-    return NextResponse.json({
-      error: 'Shopee não configurado ou URL não é da Shopee. Configure em Admin → Afiliados.',
-    }, { status: 400 })
+  if (!config) {
+    return NextResponse.json({ error: 'Config Shopee não encontrada no banco. Recarregue a página.' }, { status: 400 })
+  }
+  if (!config.active) {
+    return NextResponse.json({ error: 'Shopee está inativo. Ative o toggle e salve antes de testar.' }, { status: 400 })
+  }
+  if (!config.value?.trim()) {
+    return NextResponse.json({ error: 'Credenciais não salvas. Preencha App ID + Senha e clique em Salvar.' }, { status: 400 })
   }
 
-  return NextResponse.json({ affiliateUrl })
+  let appId: string, secret: string
+  try {
+    const parsed = JSON.parse(config.value)
+    appId = String(parsed.appId ?? '').trim()
+    secret = String(parsed.secret ?? '').trim()
+  } catch {
+    return NextResponse.json({ error: 'Formato inválido no banco (esperado JSON). Salve as credenciais novamente.' }, { status: 400 })
+  }
+
+  if (!appId || !secret) {
+    return NextResponse.json({ error: 'App ID ou Senha ausentes. Preencha e salve os dois campos.' }, { status: 400 })
+  }
+
+  const timestamp = Math.floor(Date.now() / 1000)
+  const body = JSON.stringify({
+    query: GENERATE_SHORT_LINK,
+    variables: { input: { originUrl: url } },
+  })
+
+  const signingString = `${appId}|${timestamp}|${body}`
+  const signature = crypto.createHmac('sha256', secret).update(signingString).digest('hex')
+
+  let rawText = ''
+  try {
+    const res = await fetch(SHOPEE_API, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `SHA256 Signature=${signature},Timestamp=${timestamp},AppId=${appId}`,
+      },
+      body,
+    })
+
+    rawText = await res.text()
+
+    if (!res.ok) {
+      return NextResponse.json({
+        error: `API Shopee retornou HTTP ${res.status}`,
+        raw: rawText,
+      }, { status: 400 })
+    }
+
+    const data = JSON.parse(rawText)
+    const shortLink = data?.data?.generateShortLink?.shortLink as string | undefined
+
+    if (shortLink) {
+      return NextResponse.json({ affiliateUrl: shortLink })
+    }
+
+    return NextResponse.json({
+      error: 'API Shopee não retornou shortLink. Verifique as credenciais.',
+      raw: data,
+    }, { status: 400 })
+
+  } catch (e) {
+    return NextResponse.json({
+      error: `Erro ao chamar a API Shopee: ${e instanceof Error ? e.message : String(e)}`,
+      raw: rawText || null,
+    }, { status: 500 })
+  }
 }
